@@ -1,7 +1,7 @@
 /* Chatulileo — service worker
  * Simple app-shell cache. Bump CACHE_VERSION when shipping new code.
  */
-const CACHE_VERSION = 'chatulileo-v2';
+const CACHE_VERSION = 'chatulileo-v3';
 const APP_SHELL = [
   './',
   './index.html',
