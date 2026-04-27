@@ -565,6 +565,122 @@
       max-width: 80%;
     }
     .toast.visible { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+    /* ===== v2: Hit me block (shown when general practice is empty) ===== */
+    .hitme {
+      margin-top: 18px;
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      border-radius: var(--radius-row);
+      padding: 18px;
+    }
+    .hitme-title { font-size: 14px; font-weight: 600; }
+    .hitme-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+    .hitme-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .hitme-btn {
+      padding: 14px 0;
+      border-radius: 12px;
+      background: var(--orange-primary);
+      color: white;
+      font-weight: 600; font-size: 15px;
+    }
+    .hitme-btn:active { transform: scale(0.98); }
+
+    /* ===== v2: Browse multi-select ===== */
+    .browse-toolbar {
+      display: flex; gap: 8px; align-items: center;
+      margin-bottom: 10px;
+    }
+    .browse-toolbar .toolbar-btn {
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      font-size: 12px; font-weight: 600;
+      color: var(--text-primary);
+    }
+    .browse-toolbar .toolbar-btn.active { background: var(--orange-primary); color: var(--text-primary); border-color: var(--orange-primary); }
+    .browse-toolbar .toolbar-meta { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+
+    .browse-row.selectable { cursor: pointer; }
+    .browse-row.selected { background: var(--warning-bg); border-color: var(--warning-border); }
+    .select-checkbox {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-cream);
+      display: flex; align-items: center; justify-content: center;
+      flex: none;
+      font-size: 14px;
+      color: white;
+      background: var(--card-white);
+      transition: all 120ms ease;
+    }
+    .browse-row.selected .select-checkbox { background: var(--orange-primary); border-color: var(--orange-primary); }
+
+    .selection-bar {
+      position: sticky; bottom: 0;
+      margin-top: 14px;
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex; gap: 10px; align-items: center;
+      box-shadow: 0 -4px 16px rgba(61,46,34,0.06);
+    }
+    .selection-bar .sel-count { font-size: 13px; color: var(--text-muted); flex: 1; }
+    .selection-bar .sel-action {
+      padding: 10px 16px;
+      background: var(--orange-primary);
+      color: white;
+      border-radius: 10px;
+      font-size: 13px; font-weight: 600;
+    }
+    .selection-bar .sel-action:disabled { opacity: 0.4; }
+
+    /* ===== v2: Bulk import ===== */
+    .add-tabs.three-tabs { grid-template-columns: 1fr 1fr 1fr; }
+    .bulk-help { font-size: 12px; color: var(--text-muted); line-height: 1.45; }
+    .bulk-textarea {
+      width: 100%;
+      min-height: 240px;
+      padding: 12px;
+      border: 0.5px solid var(--border-cream);
+      border-radius: 10px;
+      background: var(--card-white);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      resize: vertical;
+    }
+    .schema-block {
+      background: var(--bg-cream);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+    .bulk-feedback {
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .bulk-feedback.error { background: var(--danger-bg); color: var(--danger-text); border: 0.5px solid var(--danger-border); }
+    .bulk-feedback.success { background: var(--success-bg); color: var(--success-text); border: 0.5px solid var(--success-border); }
+    .bulk-feedback.warn { background: var(--warning-bg); color: var(--warning-text); border: 0.5px solid var(--warning-border); }
+    .bulk-feedback ul { margin: 6px 0 0; padding-left: 18px; }
+    .schema-toggle-btn {
+      background: none;
+      color: var(--orange-soft);
+      font-size: 12px; font-weight: 600;
+      padding: 4px 0;
+      align-self: flex-start;
+    }
   </style>
 </head>
 <body>
@@ -687,6 +803,28 @@
         verb_drill_partial: 'Einige Fehler — bleibe in der Box.',
         verb_drill_continue: 'Weiter →',
         graduated: 'Karte hat das Deck verlassen!',
+        // v2
+        hit_me: 'Mehr Karten',
+        hit_me_sub: 'Bonus-Karten zur heutigen Übung hinzufügen',
+        hit_me_10: '+10',
+        hit_me_15: '+15',
+        hit_me_25: '+25',
+        added_n_cards: 'Karten hinzugefügt',
+        no_more_available: 'Keine zusätzlichen Karten verfügbar.',
+        select: 'Auswählen',
+        cancel: 'Abbrechen',
+        add_to_today: 'Zu heutigem Stapel hinzufügen',
+        n_selected: 'ausgewählt',
+        nomen_tab_short: 'Nomen',
+        verb_tab_short: 'Verb',
+        bulk_tab: 'Bulk',
+        bulk_paste_label: 'Karten einfügen (JSON-Array)',
+        bulk_help: 'Format: ein Array von Karten-Objekten. Tippe „Schema anzeigen" für Beispiele.',
+        bulk_show_schema: 'Schema anzeigen',
+        bulk_hide_schema: 'Schema ausblenden',
+        bulk_validate: 'Prüfen & importieren',
+        bulk_imported_n: 'importiert',
+        bulk_warnings: 'Warnungen',
       },
       en: {
         practice_general: 'General practice',
@@ -749,6 +887,28 @@
         verb_drill_partial: 'Some mistakes — staying in current box.',
         verb_drill_continue: 'Continue →',
         graduated: 'Card graduated from deck!',
+        // v2
+        hit_me: 'Hit me',
+        hit_me_sub: 'Add bonus cards to today',
+        hit_me_10: '+10',
+        hit_me_15: '+15',
+        hit_me_25: '+25',
+        added_n_cards: 'cards added',
+        no_more_available: 'No additional cards available.',
+        select: 'Select',
+        cancel: 'Cancel',
+        add_to_today: "Add to today's queue",
+        n_selected: 'selected',
+        nomen_tab_short: 'Noun',
+        verb_tab_short: 'Verb',
+        bulk_tab: 'Bulk',
+        bulk_paste_label: 'Paste cards (JSON array)',
+        bulk_help: 'Format: an array of card objects. Tap "Show schema" for examples.',
+        bulk_show_schema: 'Show schema',
+        bulk_hide_schema: 'Hide schema',
+        bulk_validate: 'Validate & import',
+        bulk_imported_n: 'imported',
+        bulk_warnings: 'Warnings',
       }
     };
 
@@ -781,7 +941,9 @@
       leitner: load(KEY_LEITNER, {}),    // { cardId: {box: 1-5, dueDate: 'YYYY-MM-DD'} }
       artikel: load(KEY_ARTIKEL, {}),    // { cardId: {box: 1-3, correctCount: 0, dueDate} }
       verbdeck: load(KEY_VERB, {}),      // { cardId: {box, correctCount, dueDate, weaknessProfile: []} }
-      today: load(KEY_TODAY, { date: '', l1Count: 0, introduced: [] }),
+      today: load(KEY_TODAY, { date: '', l1Count: 0, introduced: [], forcedIds: [], topUpIds: [] }),
+      browseSelectMode: false,
+      browseSelected: new Set(),
       currentView: 'home',
       practiceQueue: [],
       practiceIdx: 0,
@@ -839,9 +1001,12 @@
     function ensureTodayFresh() {
       const today = todayStr();
       if (state.today.date !== today) {
-        state.today = { date: today, l1Count: 0, introduced: [] };
+        state.today = { date: today, l1Count: 0, introduced: [], forcedIds: [], topUpIds: [] };
         save(KEY_TODAY, state.today);
       }
+      // Backfill if loaded from older v1 storage
+      if (!state.today.forcedIds) state.today.forcedIds = [];
+      if (!state.today.topUpIds) state.today.topUpIds = [];
     }
 
     function showToast(msg) {
@@ -892,6 +1057,9 @@
     function buildGeneralQueue() {
       ensureTodayFresh();
       const allCards = getAllCards();
+      const byId = {};
+      allCards.forEach(c => { byId[c.id] = c; });
+
       const due = [];
       const newCandidates = [];
 
@@ -904,31 +1072,53 @@
         }
       });
 
-      // 1. L1 cards: cards already in box 1 that are due, plus new cards being introduced.
-      //   Cap total L1 cards seen today at L1_DAILY_CAP.
-      const l1Due = due.filter(x => x.entry.box === 1).map(x => x.card);
-      const otherDue = due.filter(x => x.entry.box !== 1).map(x => x.card);
+      // Forced cards (user pushed them in via Alle Karten "Add to today's queue").
+      // These bypass the L1 daily cap and always appear at the top.
+      const forcedSeen = new Set();
+      const forced = [];
+      state.today.forcedIds.forEach(id => {
+        if (byId[id] && !forcedSeen.has(id)) {
+          forced.push(byId[id]);
+          forcedSeen.add(id);
+        }
+      });
 
-      // How many "L1 slots" remaining today
+      // Don't double-show forced cards in other buckets
+      const filterForced = (arr) => arr.filter(c => !forcedSeen.has(c.id));
+
+      // 1. L1 portion: existing L1-due first, then NEW cards (shuffled!) to fill cap
+      const l1Due = filterForced(due.filter(x => x.entry.box === 1).map(x => x.card));
+      const otherDue = filterForced(due.filter(x => x.entry.box !== 1).map(x => x.card));
+
       const slotsLeft = Math.max(0, L1_DAILY_CAP - state.today.l1Count);
-
-      // Build L1 portion: existing L1 due first, then new cards to fill slots
       const l1Today = [];
       for (const c of l1Due) {
         if (l1Today.length >= slotsLeft) break;
         l1Today.push(c);
       }
-      const remainingSlots = slotsLeft - l1Today.length;
-      const newToIntroduce = [];
-      for (const c of newCandidates) {
-        if (newToIntroduce.length >= remainingSlots) break;
-        if (!state.today.introduced.includes(c.id)) {
-          newToIntroduce.push(c);
-        }
-      }
 
-      const queue = shuffle([...l1Today, ...newToIntroduce, ...otherDue]);
-      return queue;
+      // SHUFFLE new candidates BEFORE slicing — fixes the "all nouns" bug.
+      // Without this, seed order (90 nouns then 55 verbs) means day-one users see
+      // only nouns until slot 50.
+      const remainingSlots = slotsLeft - l1Today.length;
+      const shuffledNew = shuffle(filterForced(newCandidates).filter(c => !state.today.introduced.includes(c.id)));
+      const newToIntroduce = shuffledNew.slice(0, remainingSlots);
+
+      // 2. Top-up cards (from "Hit me" — bypass cap, treated as a bonus mix).
+      // Skip any already accounted for above.
+      const accountedFor = new Set([
+        ...forced.map(c => c.id),
+        ...l1Today.map(c => c.id),
+        ...newToIntroduce.map(c => c.id),
+        ...otherDue.map(c => c.id),
+      ]);
+      const topUp = state.today.topUpIds
+        .map(id => byId[id])
+        .filter(c => c && !accountedFor.has(c.id));
+
+      // Final order: forced first (intentional), then a shuffled mix of everything else.
+      const mixed = shuffle([...l1Today, ...newToIntroduce, ...otherDue, ...topUp]);
+      return [...forced, ...mixed];
     }
 
     function shuffle(arr) {
@@ -953,6 +1143,125 @@
     function countDueVerb() {
       ensureTodayFresh();
       return Object.values(state.verbdeck).filter(e => isDue(e.dueDate)).length;
+    }
+
+    /* ===========================================================================
+     * FORCED CARDS + TOP-UP HELPERS
+     * ===========================================================================*/
+    function addForcedToToday(ids) {
+      ensureTodayFresh();
+      const set = new Set(state.today.forcedIds);
+      ids.forEach(id => set.add(id));
+      state.today.forcedIds = [...set];
+      save(KEY_TODAY, state.today);
+    }
+
+    function addTopUpToToday(n) {
+      ensureTodayFresh();
+      const allCards = getAllCards();
+      const byId = {};
+      allCards.forEach(c => { byId[c.id] = c; });
+
+      // Cards already accounted for in today's general queue — exclude them.
+      const inQueue = new Set(buildGeneralQueue().map(c => c.id));
+
+      // Pool of new candidates (never seen) + cards due in the future (already in system).
+      const newPool = allCards.filter(c => !state.leitner[c.id] && !inQueue.has(c.id));
+      const futurePool = allCards.filter(c => state.leitner[c.id] && !isDue(state.leitner[c.id].dueDate) && !inQueue.has(c.id));
+
+      // Mix both pools — interleave a fair share of each.
+      const shuffledNew = shuffle(newPool);
+      const shuffledFuture = shuffle(futurePool);
+      const picked = [];
+      let i = 0, j = 0;
+      while (picked.length < n && (i < shuffledNew.length || j < shuffledFuture.length)) {
+        // Alternate pulling from the two pools (new first, then future, repeat)
+        if (i < shuffledNew.length) { picked.push(shuffledNew[i++]); if (picked.length >= n) break; }
+        if (j < shuffledFuture.length) { picked.push(shuffledFuture[j++]); }
+      }
+      const ids = picked.map(c => c.id);
+      const set = new Set(state.today.topUpIds);
+      ids.forEach(id => set.add(id));
+      state.today.topUpIds = [...set];
+      save(KEY_TODAY, state.today);
+      return ids.length;
+    }
+
+    /* ===========================================================================
+     * BULK IMPORT VALIDATION
+     * ===========================================================================*/
+    function validateBulkCards(rawText) {
+      // Returns { ok: bool, cards?: [...], error?: string, warnings?: [...] }
+      let parsed;
+      try {
+        parsed = JSON.parse(rawText);
+      } catch (e) {
+        return { ok: false, error: 'JSON-Fehler: ' + e.message };
+      }
+      if (!Array.isArray(parsed)) return { ok: false, error: 'Erwartet ein Array von Karten.' };
+      const out = [];
+      const warnings = [];
+      const seenIds = new Set(getAllCards().map(c => c.id));
+      const localIds = new Set();
+
+      for (let i = 0; i < parsed.length; i++) {
+        const c = parsed[i];
+        const where = `Karte #${i + 1}`;
+        if (!c || typeof c !== 'object') return { ok: false, error: `${where}: kein Objekt.` };
+        if (c.type !== 'noun' && c.type !== 'verb') return { ok: false, error: `${where}: type muss 'noun' oder 'verb' sein.` };
+        if (!Array.isArray(c.en) || c.en.length === 0) return { ok: false, error: `${where}: en muss ein nicht-leeres Array sein.` };
+        if (c.type === 'noun') {
+          if (!['der','die','das'].includes(c.article)) return { ok: false, error: `${where}: article muss der/die/das sein.` };
+          if (!c.word) return { ok: false, error: `${where}: word fehlt.` };
+        } else {
+          if (!c.infinitive) return { ok: false, error: `${where}: infinitive fehlt.` };
+          if (!c.conj || typeof c.conj !== 'object') return { ok: false, error: `${where}: conj fehlt.` };
+          for (const p of ['ich','du','er','wir','ihr','sie']) {
+            if (!c.conj[p]) return { ok: false, error: `${where}: conj.${p} fehlt.` };
+          }
+          if (!c.perfekt) return { ok: false, error: `${where}: perfekt fehlt.` };
+          if (!c.praeteritum) return { ok: false, error: `${where}: praeteritum fehlt.` };
+        }
+        // ID handling: assign one if missing, complain if it collides
+        let id = c.id;
+        if (!id) {
+          id = 'u' + Date.now() + '_' + i;
+        }
+        if (seenIds.has(id) || localIds.has(id)) {
+          warnings.push(`${where}: id '${id}' existiert schon — übersprungen.`);
+          continue;
+        }
+        localIds.add(id);
+
+        // Normalize the card with sane defaults
+        const card = {
+          id,
+          type: c.type,
+          en: c.en.slice(0, 3),
+          example: c.example && c.example.de ? { de: String(c.example.de), en: String(c.example.en || '') } : { de: '', en: '' },
+          level: c.level || 'custom',
+        };
+        if (c.type === 'noun') {
+          card.article = c.article;
+          card.word = c.word;
+          card.plural = c.plural || '—';
+        } else {
+          card.infinitive = c.infinitive;
+          card.conj = { ich: c.conj.ich, du: c.conj.du, er: c.conj.er, wir: c.conj.wir, ihr: c.conj.ihr, sie: c.conj.sie };
+          card.perfekt = c.perfekt;
+          card.praeteritum = c.praeteritum;
+          card.hilfsverb = c.hilfsverb || 'haben';
+          card.reflexive = !!c.reflexive;
+          card.separable = !!c.separable;
+          card.strong = !!c.strong;
+          card.objectCase = c.objectCase || null;
+          card.prepositions = Array.isArray(c.prepositions) ? c.prepositions
+            .filter(p => p && p.prep && (p.case === 'Akk' || p.case === 'Dat'))
+            .map(p => ({ prep: p.prep, case: p.case, meaning: p.meaning || '' })) : [];
+        }
+        out.push(card);
+      }
+      return { ok: true, cards: out, warnings };
     }
 
     /* ===========================================================================
@@ -1190,8 +1499,33 @@
             <span class="empty-emoji">✨</span>
             <div class="empty-title">${t('nothing_due')}</div>
             <div class="empty-sub">${t('nothing_due_sub')}</div>
+          </div>
+          <div class="hitme">
+            <div class="hitme-title">${t('hit_me')}</div>
+            <div class="hitme-sub">${t('hit_me_sub')}</div>
+            <div class="hitme-row">
+              <button class="hitme-btn" data-n="10">${t('hit_me_10')}</button>
+              <button class="hitme-btn" data-n="15">${t('hit_me_15')}</button>
+              <button class="hitme-btn" data-n="25">${t('hit_me_25')}</button>
+            </div>
           </div>`;
         document.getElementById('practice-back').onclick = goHome;
+        view.querySelectorAll('.hitme-btn').forEach(btn => {
+          btn.onclick = () => {
+            const n = parseInt(btn.dataset.n, 10);
+            const added = addTopUpToToday(n);
+            if (added === 0) {
+              showToast(t('no_more_available'));
+              return;
+            }
+            showToast(`+${added} ${t('added_n_cards')}`);
+            // Rebuild queue so the new top-ups appear
+            state.practiceQueue = buildGeneralQueue();
+            state.practiceIdx = 0;
+            state.practiceCardFlipped = false;
+            renderPractice();
+          };
+        });
         return;
       }
 
@@ -1837,6 +2171,8 @@
 
       const total = filtered.length;
       const shown = filtered.slice(0, 200);
+      const selectMode = state.browseSelectMode;
+      const sel = state.browseSelected;
 
       const chips = [
         { id: 'all', label: t('all') },
@@ -1855,8 +2191,13 @@
           ? `<span class="article-muted">${escHtml(c.article)}</span>${escHtml(c.word)}`
           : escHtml(c.infinitive);
         const en = c.en.join(', ');
+        const isSelected = selectMode && sel.has(c.id);
+        const checkbox = selectMode
+          ? `<div class="select-checkbox">${isSelected ? '✓' : ''}</div>`
+          : '';
         return `
-          <div class="browse-row">
+          <div class="browse-row ${selectMode ? 'selectable' : ''} ${isSelected ? 'selected' : ''}" data-id="${escHtml(c.id)}">
+            ${checkbox}
             <div class="browse-row-main">
               <div class="browse-row-de">${main}</div>
               <div class="browse-row-en">${escHtml(en)}</div>
@@ -1865,7 +2206,7 @@
               ${ent ? `<span class="meta-tag box${ent.box}">L${ent.box}</span>` : ''}
               ${inArt ? `<span class="meta-tag deck-a">A</span>` : ''}
               ${inVerb ? `<span class="meta-tag deck-v">V</span>` : ''}
-              ${isMine ? `<button class="delete-btn" data-id="${escHtml(c.id)}" title="delete">×</button>` : ''}
+              ${isMine && !selectMode ? `<button class="delete-btn" data-del-id="${escHtml(c.id)}" title="delete">×</button>` : ''}
             </div>
           </div>`;
       }).join('');
@@ -1878,6 +2219,9 @@
           <div class="subhead-spacer"></div>
           <div class="subhead-meta">${total}</div>
         </div>
+        <div class="browse-toolbar">
+          <button class="toolbar-btn ${selectMode ? 'active' : ''}" id="toggle-select">${selectMode ? t('cancel') : t('select')}</button>
+        </div>
         <div class="filter-chips">
           ${chips.map(ch => `<button class="filter-chip ${state.browseFilter === ch.id ? 'active' : ''}" data-f="${ch.id}">${escHtml(ch.label)}</button>`).join('')}
         </div>
@@ -1885,16 +2229,27 @@
           ? `<div class="empty"><div class="empty-title">${t('no_cards_match')}</div></div>`
           : `<div class="browse-list">${rowsHtml}</div>`}
         ${total > 200 ? `<div class="more-indicator">…${total - 200} ${t('more_suffix')} ${t('and_more')}</div>` : ''}
+        ${selectMode ? `
+          <div class="selection-bar">
+            <div class="sel-count">${sel.size} ${t('n_selected')}</div>
+            <button class="sel-action" id="add-to-today-btn" ${sel.size === 0 ? 'disabled' : ''}>${t('add_to_today')}</button>
+          </div>` : ''}
       `;
 
       document.getElementById('br-back').onclick = goHome;
       view.querySelectorAll('.filter-chip').forEach(b => {
         b.onclick = () => { state.browseFilter = b.dataset.f; renderBrowse(); };
       });
+      document.getElementById('toggle-select').onclick = () => {
+        state.browseSelectMode = !state.browseSelectMode;
+        if (!state.browseSelectMode) state.browseSelected = new Set();
+        renderBrowse();
+      };
       view.querySelectorAll('.delete-btn').forEach(b => {
-        b.onclick = () => {
+        b.onclick = (e) => {
+          e.stopPropagation();
           if (!confirm(t('confirm_delete'))) return;
-          const id = b.dataset.id;
+          const id = b.dataset.delId;
           state.userCards = state.userCards.filter(c => c.id !== id);
           delete state.leitner[id]; delete state.artikel[id]; delete state.verbdeck[id];
           save(KEY_CARDS, state.userCards);
@@ -1904,6 +2259,25 @@
           renderBrowse();
         };
       });
+      if (selectMode) {
+        view.querySelectorAll('.browse-row.selectable').forEach(row => {
+          row.onclick = () => {
+            const id = row.dataset.id;
+            if (sel.has(id)) sel.delete(id); else sel.add(id);
+            renderBrowse();
+          };
+        });
+        const addBtn = document.getElementById('add-to-today-btn');
+        if (addBtn) addBtn.onclick = () => {
+          if (sel.size === 0) return;
+          const ids = [...sel];
+          addForcedToToday(ids);
+          showToast(`${ids.length} ${t('added_n_cards')}`);
+          state.browseSelectMode = false;
+          state.browseSelected = new Set();
+          renderBrowse();
+        };
+      }
     }
 
     /* ===========================================================================
@@ -1914,9 +2288,10 @@
       const tab = state.addTab;
 
       const tabBar = `
-        <div class="add-tabs">
-          <button class="add-tab ${tab === 'noun' ? 'active' : ''}" data-tab="noun">${t('nomen_tab')}</button>
-          <button class="add-tab ${tab === 'verb' ? 'active' : ''}" data-tab="verb">${t('verb_tab')}</button>
+        <div class="add-tabs three-tabs">
+          <button class="add-tab ${tab === 'noun' ? 'active' : ''}" data-tab="noun">${t('nomen_tab_short')}</button>
+          <button class="add-tab ${tab === 'verb' ? 'active' : ''}" data-tab="verb">${t('verb_tab_short')}</button>
+          <button class="add-tab ${tab === 'bulk' ? 'active' : ''}" data-tab="bulk">${t('bulk_tab')}</button>
         </div>`;
 
       let formHtml = '';
@@ -1938,7 +2313,7 @@
             <div class="field"><label class="field-label">${t('example_en')}</label><input class="input" id="f-ex-en"></div>
             <button class="save-btn" id="f-save">${t('save')}</button>
           </div>`;
-      } else {
+      } else if (tab === 'verb') {
         formHtml = `
           <div class="form-stack">
             <div class="field-row">
@@ -1983,6 +2358,52 @@
             <div class="field"><label class="field-label">${t('example_en')}</label><input class="input" id="f-ex-en"></div>
             <button class="save-btn" id="f-save">${t('save')}</button>
           </div>`;
+      } else if (tab === 'bulk') {
+        const schemaShown = !!state.bulkSchemaShown;
+        const exampleSchema = `[
+  {
+    "type": "noun",
+    "article": "der",
+    "word": "Schlüssel",
+    "plural": "Schlüssel",
+    "en": ["key"],
+    "example": { "de": "Wo ist mein Schlüssel?", "en": "Where is my key?" },
+    "level": "A1"
+  },
+  {
+    "type": "verb",
+    "infinitive": "zeigen",
+    "en": ["to show"],
+    "conj": {
+      "ich": "zeige", "du": "zeigst", "er": "zeigt",
+      "wir": "zeigen", "ihr": "zeigt", "sie": "zeigen"
+    },
+    "perfekt": "hat gezeigt",
+    "praeteritum": "zeigte",
+    "hilfsverb": "haben",
+    "reflexive": false,
+    "separable": false,
+    "strong": false,
+    "objectCase": null,
+    "prepositions": [],
+    "example": { "de": "Ich zeige dir die Stadt.", "en": "I'll show you the city." },
+    "level": "A2"
+  }
+]`;
+        formHtml = `
+          <div class="form-stack">
+            <div class="bulk-help">${t('bulk_help')}</div>
+            <button type="button" class="schema-toggle-btn" id="schema-toggle">
+              ${schemaShown ? t('bulk_hide_schema') : t('bulk_show_schema')}
+            </button>
+            ${schemaShown ? `<div class="schema-block">${escHtml(exampleSchema)}</div>` : ''}
+            <div class="field">
+              <label class="field-label">${t('bulk_paste_label')}</label>
+              <textarea class="bulk-textarea" id="f-bulk" placeholder="[\n  { ... },\n  { ... }\n]" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+            </div>
+            <div id="bulk-feedback"></div>
+            <button class="save-btn" id="bulk-save">${t('bulk_validate')}</button>
+          </div>`;
       }
 
       view.innerHTML = `
@@ -2024,7 +2445,7 @@
         if (isReflexive) document.getElementById('f-refl').checked = true;
       };
 
-      document.getElementById('f-save').onclick = () => {
+      document.getElementById('f-save')?.addEventListener('click', () => {
         const id = 'u' + Date.now();
         const niveau = document.getElementById('f-niveau').value;
         const enRaw = document.getElementById('f-en').value.trim();
@@ -2083,7 +2504,40 @@
         save(KEY_CARDS, state.userCards);
         showToast(t('saved'));
         goHome();
-      };
+      });
+
+      // Bulk import handlers (only present when tab === 'bulk')
+      document.getElementById('schema-toggle')?.addEventListener('click', () => {
+        state.bulkSchemaShown = !state.bulkSchemaShown;
+        renderAdd();
+      });
+      document.getElementById('bulk-save')?.addEventListener('click', () => {
+        const raw = document.getElementById('f-bulk').value.trim();
+        const fb = document.getElementById('bulk-feedback');
+        if (!raw) {
+          fb.innerHTML = `<div class="bulk-feedback error">Leer.</div>`;
+          return;
+        }
+        const result = validateBulkCards(raw);
+        if (!result.ok) {
+          fb.innerHTML = `<div class="bulk-feedback error">${escHtml(result.error)}</div>`;
+          return;
+        }
+        if (result.cards.length === 0) {
+          fb.innerHTML = `<div class="bulk-feedback warn">Keine Karten zum Importieren.</div>`;
+          return;
+        }
+        // Commit the import
+        state.userCards.push(...result.cards);
+        save(KEY_CARDS, state.userCards);
+        const warnHtml = result.warnings.length
+          ? `<div style="margin-top:6px;font-size:12px;"><strong>${t('bulk_warnings')}:</strong><ul>${result.warnings.map(w => `<li>${escHtml(w)}</li>`).join('')}</ul></div>`
+          : '';
+        fb.innerHTML = `<div class="bulk-feedback success">${result.cards.length} ${t('bulk_imported_n')}.${warnHtml}</div>`;
+        // Clear the textarea so user knows it landed
+        document.getElementById('f-bulk').value = '';
+        showToast(`${result.cards.length} ${t('added_n_cards')}`);
+      });
     }
 
     /* ===========================================================================
