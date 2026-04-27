@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FAF5ED">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Chatulileo">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Chatulileo</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== Design tokens ===== */
+    :root {
+      --bg-cream: #FAF5ED;
+      --card-white: #FFFFFF;
+      --border-cream: #E8DDC9;
+      --border-subtle: #F2EADC;
+      --orange-primary: #F2A56A;
+      --orange-deep: #E89564;
+      --orange-soft: #D88654;
+
+      --text-primary: #3D2E22;
+      --text-muted: #8A7866;
+      --text-on-orange: #FFFFFF;
+      --text-on-orange-sub: #FAEAD8;
+
+      --success-bg: #D9EDD9;
+      --success-border: #B8D9B8;
+      --success-text: #2E5A2E;
+
+      --warning-bg: #FAEAD8;
+      --warning-border: #E8D5B5;
+      --warning-text: #8B5E2A;
+
+      --danger-bg: #F4DCDC;
+      --danger-border: #E8C0C0;
+      --danger-text: #8B3A3A;
+
+      --case-nom-bg: #F4DCDC; --case-nom-text: #8B3A3A;
+      --case-akk-bg: #DCE9F4; --case-akk-text: #1F4570;
+      --case-dat-bg: #D9EDD9; --case-dat-text: #2E5A2E;
+      --case-gen-bg: #F4ECC0; --case-gen-text: #6B5817;
+
+      --pill-on-orange-bg: rgba(61,46,34,0.18);
+      --pill-on-white-bg: rgba(61,46,34,0.10);
+
+      --serif: 'Playfair Display', Georgia, serif;
+      --sans: Helvetica, Arial, sans-serif;
+
+      --radius-tile: 18px;
+      --radius-row: 14px;
+      --radius-pill: 999px;
+    }
+
+    /* ===== Reset / base ===== */
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg-cream);
+      color: var(--text-primary);
+      font-size: 14px;
+      line-height: 1.4;
+      min-height: 100vh;
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior-y: contain;
+    }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; padding: 0; }
+    input, textarea, select { font-family: inherit; font-size: 14px; color: var(--text-primary); }
+    input:focus, textarea:focus, select:focus { outline: 2px solid var(--orange-primary); outline-offset: 1px; }
+
+    /* ===== App shell ===== */
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== Header ===== */
+    .header {
+      position: sticky; top: 0; z-index: 10;
+      background: var(--bg-cream);
+      padding: 14px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 0.5px solid transparent;
+    }
+    .header.scrolled { border-bottom-color: var(--border-cream); }
+    .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .brand-logo { width: 32px; height: 32px; flex: none; }
+    .brand-name { font-family: var(--serif); font-weight: 500; font-size: 24px; color: var(--text-primary); letter-spacing: 0.2px; }
+
+    .lang-toggle {
+      display: flex; gap: 2px;
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      border-radius: 8px;
+      padding: 3px;
+    }
+    .lang-pill {
+      font-size: 12px; font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 6px;
+      color: var(--text-muted);
+      letter-spacing: 0.4px;
+    }
+    .lang-pill.active { background: var(--orange-primary); color: var(--text-primary); }
+
+    /* ===== Main content area ===== */
+    .main { flex: 1; padding: 6px 18px 100px; }
+
+    /* ===== Tile grid (home) ===== */
+    .tile-stack { display: flex; flex-direction: column; gap: 12px; }
+    .tile-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .tile {
+      position: relative;
+      border-radius: var(--radius-tile);
+      padding: 18px;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      aspect-ratio: 1 / 1;
+      transition: transform 120ms ease;
+      user-select: none;
+    }
+    .tile:active { transform: scale(0.985); }
+
+    .tile-big {
+      background: var(--orange-deep);
+      color: var(--text-on-orange);
+    }
+    .tile-big .tile-title { font-size: 26px; font-weight: 600; line-height: 1.15; }
+    .tile-big .tile-sub { font-size: 13px; font-weight: 400; color: var(--text-on-orange-sub); margin-top: 4px; }
+
+    .tile-small {
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      color: var(--text-primary);
+    }
+    .tile-small .tile-title { font-size: 17px; font-weight: 600; line-height: 1.2; }
+    .tile-small .tile-sub { font-size: 12px; font-weight: 400; color: var(--text-muted); margin-top: 3px; }
+
+    .count-pill {
+      position: absolute; top: 14px; right: 14px;
+      font-size: 12px; font-weight: 600;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      min-width: 28px; text-align: center;
+    }
+    .count-pill.on-orange { background: var(--pill-on-orange-bg); color: var(--text-on-orange); }
+    .count-pill.on-white { background: var(--pill-on-white-bg); color: var(--text-primary); }
+
+    /* ===== Row tiles ===== */
+    .row-tile {
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      border-radius: var(--radius-row);
+      padding: 16px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      color: var(--text-primary);
+      font-size: 14px;
+      transition: transform 120ms ease;
+    }
+    .row-tile:active { transform: scale(0.99); }
+    .row-tile .row-arrow { color: var(--text-muted); font-size: 18px; }
+    .row-tile-stack { display: flex; flex-direction: column; align-items: flex-start; }
+    .row-tile-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ===== Progress (collapsible) ===== */
+    .progress-tile { flex-direction: column; align-items: stretch; gap: 0; }
+    .progress-head { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+    .progress-head-stack { display: flex; flex-direction: column; align-items: flex-start; }
+    .chevron { color: var(--text-muted); font-size: 14px; transition: transform 200ms ease; }
+    .progress-tile.expanded .chevron { transform: rotate(180deg); }
+    .progress-body {
+      display: none;
+      padding-top: 16px;
+      margin-top: 14px;
+      border-top: 0.5px solid var(--border-subtle);
+    }
+    .progress-tile.expanded .progress-body { display: block; }
+    .progress-row {
+      display: grid;
+      grid-template-columns: 110px 1fr 30px;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .progress-row:last-child { margin-bottom: 0; }
+    .progress-label { font-size: 12px; color: var(--text-muted); }
+    .progress-bar-bg { background: var(--warning-bg); height: 8px; border-radius: 4px; overflow: hidden; }
+    .progress-bar-fill { background: var(--orange-primary); height: 100%; border-radius: 4px; transition: width 300ms ease; }
+    .progress-count { font-size: 12px; font-weight: 600; color: var(--text-primary); text-align: right; }
+
+    /* ===== Footer bar ===== */
+    .footer {
+      position: sticky; bottom: 0;
+      background: var(--bg-cream);
+      border-top: 0.5px solid var(--border-cream);
+      padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+      display: flex; justify-content: center; align-items: center;
+    }
+    .add-btn {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--text-primary);
+      font-size: 14px; font-weight: 600;
+    }
+    .add-btn-circle {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--orange-primary);
+      color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 600;
+      line-height: 1;
+    }
+
+    /* ===== Page transitions / views ===== */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ===== Subpage header ===== */
+    .subhead {
+      display: flex; align-items: center; gap: 12px;
+      margin: 4px 0 18px;
+    }
+    .back-btn {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      font-size: 18px; color: var(--text-primary);
+    }
+    .subhead-title { font-size: 17px; font-weight: 600; }
+    .subhead-spacer { flex: 1; }
+    .subhead-meta { font-size: 12px; color: var(--text-muted); }
+
+    /* ===== Flashcard (general practice) ===== */
+    .deck-wrap { padding: 4px 0 24px; }
+    .flashcard {
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      border-radius: 22px;
+      min-height: 380px;
+      padding: 28px 22px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(61,46,34,0.04);
+      transition: transform 180ms ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .flashcard:active { transform: scale(0.995); }
+
+    .fc-front-en { font-size: 28px; font-weight: 600; color: var(--text-primary); line-height: 1.25; }
+    .fc-tap-hint { margin-top: 18px; font-size: 11px; color: var(--text-muted); letter-spacing: 1.2px; text-transform: uppercase; }
+
+    .fc-back { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .fc-noun-line { font-size: 30px; font-weight: 600; line-height: 1.15; }
+    .fc-noun-article { color: var(--text-muted); font-weight: 400; margin-right: 6px; }
+    .fc-plural { font-size: 13px; color: var(--text-muted); }
+    .fc-en-trans { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .fc-verb-line { font-size: 26px; font-weight: 600; line-height: 1.15; }
+    .fc-meta { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 4px; }
+    .meta-pill {
+      background: var(--border-subtle);
+      color: #5F4A36;
+      font-size: 11px; font-weight: 600;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      letter-spacing: 0.3px;
+    }
+    .fc-prep-list { width: 100%; margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .fc-prep-row { font-size: 13px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; justify-content: center; }
+    .prep-word { color: var(--orange-soft); font-weight: 600; }
+    .case-badge {
+      font-size: 10px; font-weight: 600;
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+      letter-spacing: 0.3px;
+    }
+    .case-badge.akk { background: var(--case-akk-bg); color: var(--case-akk-text); }
+    .case-badge.dat { background: var(--case-dat-bg); color: var(--case-dat-text); }
+    .case-badge.nom { background: var(--case-nom-bg); color: var(--case-nom-text); }
+    .case-badge.gen { background: var(--case-gen-bg); color: var(--case-gen-text); }
+    .prep-meaning { color: var(--text-muted); font-size: 12px; }
+
+    .fc-conj {
+      width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 6px 16px;
+      margin-top: 8px;
+      max-width: 320px;
+    }
+    .conj-cell { display: flex; gap: 6px; font-size: 13px; }
+    .conj-pron { color: var(--text-muted); min-width: 64px; }
+    .conj-form { color: var(--text-primary); font-weight: 500; }
+
+    .fc-perfekt-line { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .fc-perfekt-line strong { color: var(--text-primary); font-weight: 500; margin-left: 4px; }
+
+    .fc-example {
+      background: var(--bg-cream);
+      border-radius: 12px;
+      padding: 12px 14px;
+      width: 100%;
+      margin-top: 14px;
+      text-align: left;
+    }
+    .fc-example-de { font-size: 13px; line-height: 1.45; }
+    .fc-example-en { font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+
+    /* Case-coloring spans (used inside example sentences) */
+    .case-pill {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-weight: 500;
+    }
+    .case-pill.akk { background: var(--case-akk-bg); color: var(--case-akk-text); }
+    .case-pill.dat { background: var(--case-dat-bg); color: var(--case-dat-text); }
+    .case-pill.nom { background: var(--case-nom-bg); color: var(--case-nom-text); }
+    .case-pill.gen { background: var(--case-gen-bg); color: var(--case-gen-text); }
+    .prep-color { color: var(--orange-soft); font-weight: 600; }
+
+    /* ===== Action buttons (after reveal) ===== */
+    .action-stack { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+    .action-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 14px; font-weight: 600;
+      border: 0.5px solid;
+      transition: transform 120ms ease, opacity 120ms ease;
+    }
+    .action-btn:active { transform: scale(0.99); opacity: 0.9; }
+    .action-btn.success { background: var(--success-bg); border-color: var(--success-border); color: var(--success-text); }
+    .action-btn.warning { background: var(--warning-bg); border-color: var(--warning-border); color: var(--warning-text); }
+    .action-btn.danger { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger-text); }
+
+    /* ===== Empty deck state ===== */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-emoji { font-size: 36px; display: block; margin-bottom: 10px; }
+    .empty-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+    .empty-sub { font-size: 13px; line-height: 1.5; max-width: 280px; margin: 0 auto; }
+
+    /* ===== Artikel deck (der/die/das) ===== */
+    .artikel-prompt {
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      border-radius: 22px;
+      padding: 32px 22px;
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 220px; justify-content: center;
+      text-align: center;
+    }
+    .artikel-blank { font-size: 30px; font-weight: 600; }
+    .artikel-blank .blank { color: var(--text-muted); border-bottom: 2px dashed var(--border-cream); padding: 0 18px; margin-right: 6px; }
+    .artikel-en { font-size: 13px; color: var(--text-muted); margin-top: 14px; }
+
+    .artikel-choices { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 18px; }
+    .artikel-choice {
+      padding: 18px 0;
+      border-radius: 14px;
+      font-size: 16px; font-weight: 600;
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      color: var(--text-primary);
+    }
+    .artikel-choice.correct { background: var(--success-bg); border-color: var(--success-border); color: var(--success-text); }
+    .artikel-choice.wrong { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger-text); }
+    .artikel-choice:disabled { cursor: default; opacity: 0.95; }
+
+    .artikel-reveal {
+      margin-top: 18px;
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .artikel-reveal-noun { font-size: 18px; font-weight: 600; }
+    .artikel-reveal-plural { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .artikel-reveal-example { font-size: 13px; margin-top: 10px; line-height: 1.45; }
+    .artikel-reveal-example-en { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+    .next-btn {
+      width: 100%; padding: 14px;
+      background: var(--orange-primary); color: white;
+      border-radius: 14px;
+      font-size: 14px; font-weight: 600;
+      margin-top: 14px;
+    }
+
+    /* ===== Verb deck (drill) ===== */
+    .drill-card {
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      border-radius: 22px;
+      padding: 24px 22px;
+      min-height: 280px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .drill-step-label { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); text-align: center; }
+    .drill-verb { font-size: 22px; font-weight: 600; text-align: center; }
+    .drill-conj-list { display: flex; flex-direction: column; gap: 10px; }
+    .drill-conj-row { display: grid; grid-template-columns: 80px 1fr; gap: 10px; align-items: center; }
+    .drill-conj-pron { color: var(--text-muted); font-size: 14px; }
+    .drill-input {
+      padding: 11px 12px;
+      border: 0.5px solid var(--border-cream);
+      border-radius: 10px;
+      background: var(--card-white);
+      width: 100%;
+    }
+    .drill-input.correct { background: var(--success-bg); border-color: var(--success-border); color: var(--success-text); }
+    .drill-input.wrong { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger-text); }
+    .drill-correct-answer { font-size: 12px; color: var(--text-muted); margin-top: 4px; padding-left: 90px; }
+    .drill-correct-answer strong { color: var(--success-text); font-weight: 600; }
+
+    .prep-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .prep-option {
+      padding: 12px 0;
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      transition: background 120ms ease;
+    }
+    .prep-option.selected { background: var(--orange-primary); color: white; border-color: var(--orange-primary); }
+    .prep-option.correct-required { background: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
+    .prep-option.wrong-selected { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-border); }
+
+    .case-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .case-btn {
+      padding: 16px 0;
+      border-radius: 14px;
+      font-size: 15px; font-weight: 600;
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      color: var(--text-primary);
+    }
+    .case-btn.correct { background: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
+    .case-btn.wrong { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-border); }
+
+    .drill-question { font-size: 14px; text-align: center; color: var(--text-primary); }
+
+    /* ===== Browse list ===== */
+    .filter-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }
+    .filter-chips::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      flex: none;
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      font-size: 12px; font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .filter-chip.active { background: var(--orange-primary); color: var(--text-primary); border-color: var(--orange-primary); }
+
+    .browse-list { display: flex; flex-direction: column; gap: 6px; }
+    .browse-row {
+      background: var(--card-white);
+      border: 0.5px solid var(--border-cream);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .browse-row-main { flex: 1; min-width: 0; }
+    .browse-row-de { font-size: 14px; font-weight: 500; }
+    .browse-row-de .article-muted { color: var(--text-muted); font-weight: 400; margin-right: 4px; }
+    .browse-row-en { font-size: 12px; color: var(--text-muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .browse-row-meta { display: flex; gap: 4px; align-items: center; flex: none; }
+    .meta-tag {
+      font-size: 10px; font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--border-subtle); color: #5F4A36;
+    }
+    .meta-tag.box1 { background: var(--success-bg); color: var(--success-text); }
+    .meta-tag.box2 { background: var(--success-bg); color: var(--success-text); }
+    .meta-tag.box3 { background: var(--warning-bg); color: var(--warning-text); }
+    .meta-tag.box4 { background: var(--warning-bg); color: var(--warning-text); }
+    .meta-tag.box5 { background: var(--danger-bg); color: var(--danger-text); }
+    .meta-tag.deck-a, .meta-tag.deck-v { background: var(--orange-primary); color: white; }
+    .delete-btn {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--danger-bg); color: var(--danger-text);
+      font-size: 14px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .more-indicator { text-align: center; color: var(--text-muted); font-size: 12px; padding: 14px; }
+
+    /* ===== Add form ===== */
+    .add-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 16px; background: var(--card-white); border: 0.5px solid var(--border-cream); padding: 4px; border-radius: 12px; }
+    .add-tab { padding: 10px; border-radius: 9px; font-size: 13px; font-weight: 600; color: var(--text-muted); }
+    .add-tab.active { background: var(--orange-primary); color: var(--text-primary); }
+    .form-stack { display: flex; flex-direction: column; gap: 12px; }
+    .field-label { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; display: block; }
+    .field { display: flex; flex-direction: column; }
+    .input, .select, .textarea {
+      width: 100%;
+      padding: 11px 12px;
+      border: 0.5px solid var(--border-cream);
+      border-radius: 10px;
+      background: var(--card-white);
+    }
+    .textarea { min-height: 80px; resize: vertical; font-family: inherit; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .conj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .checkbox-row { display: flex; gap: 14px; flex-wrap: wrap; }
+    .checkbox-row label { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+    .auto-fill-btn {
+      padding: 10px 14px;
+      background: var(--bg-cream);
+      border: 0.5px solid var(--border-cream);
+      border-radius: 10px;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-primary);
+      align-self: flex-start;
+    }
+    .save-btn {
+      padding: 14px;
+      background: var(--orange-primary);
+      color: white;
+      font-weight: 600; font-size: 14px;
+      border-radius: 12px;
+      margin-top: 6px;
+    }
+    .form-section-divider {
+      border-top: 0.5px solid var(--border-cream);
+      margin: 8px 0;
+    }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+      background: var(--text-primary); color: white;
+      padding: 10px 16px; border-radius: var(--radius-pill);
+      font-size: 13px; font-weight: 500;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 200ms ease, transform 200ms ease;
+      pointer-events: none;
+      max-width: 80%;
+    }
+    .toast.visible { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header" id="header">
+      <div class="brand" id="brand-link">
+        <svg class="brand-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 24 L22 12 L28 22 Q32 20 36 22 L42 12 L48 24 Q54 32 50 42 Q46 54 32 54 Q18 54 14 42 Q10 32 16 24 Z" fill="#F2A56A"/>
+          <path d="M19 22 L22 14 L25 22 Z" fill="#E89B9B"/>
+          <path d="M45 22 L42 14 L39 22 Z" fill="#E89B9B"/>
+          <path d="M32 54 Q22 54 22 42 Q22 38 32 38 Q42 38 42 42 Q42 54 32 54 Z" fill="#FAEAD8"/>
+          <path d="M22 32 Q25 30 28 32" stroke="#3D2E22" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <path d="M36 32 Q39 30 42 32" stroke="#3D2E22" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <path d="M30 38 L32 40 L34 38 Z" fill="#E89B9B"/>
+          <path d="M32 40 L32 42 M32 42 Q30 43.5 29 43 M32 42 Q34 43.5 35 43" stroke="#3D2E22" stroke-width="1" fill="none" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-name">Chatulileo</span>
+      </div>
+      <div class="lang-toggle" id="lang-toggle">
+        <button class="lang-pill" data-lang="de">DE</button>
+        <button class="lang-pill" data-lang="en">EN</button>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="main" id="main">
+      <!-- Home view -->
+      <section class="view active" id="view-home"></section>
+      <!-- Practice view -->
+      <section class="view" id="view-practice"></section>
+      <!-- Artikel view -->
+      <section class="view" id="view-artikel"></section>
+      <!-- Verb deck view -->
+      <section class="view" id="view-verbdeck"></section>
+      <!-- Browse view -->
+      <section class="view" id="view-browse"></section>
+      <!-- Add view -->
+      <section class="view" id="view-add"></section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+      <button class="add-btn" id="footer-add-btn">
+        <span class="add-btn-circle">+</span>
+        <span id="footer-add-label">Wort hinzufügen</span>
+      </button>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="data.js"></script>
+  <script>
+  (function() {
+    'use strict';
+
+    /* ===========================================================================
+     * STRINGS / i18n
+     * ===========================================================================*/
+    const STRINGS = {
+      de: {
+        practice_general: 'Allgemein üben',
+        practice_general_sub: 'Nomen + Verben',
+        practice_artikel: 'Artikel',
+        practice_artikel_sub: 'der/die/das',
+        practice_verb: 'Verben',
+        practice_verb_sub: 'Konjugation',
+        all_cards: 'Alle Karten',
+        your_progress: 'Mein Fortschritt',
+        words_in_system: 'Wörter im System',
+        every_day: 'Täglich',
+        every_2_days: 'Alle 2 Tage',
+        every_4_days: 'Alle 4 Tage',
+        every_8_days: 'Alle 8 Tage',
+        every_16_days: 'Alle 16 Tage',
+        add_word: 'Wort hinzufügen',
+        due_today: 'heute',
+        knew_it: 'Ich wusste es',
+        artikel_wrong: 'Artikel falsch → Artikel-Deck',
+        details_wrong: 'Details falsch → Verben-Deck',
+        didnt_know: 'Ich wusste es nicht',
+        tap_to_flip: 'Tippen zum umdrehen',
+        plural: 'Plural',
+        nothing_due: 'Keine Karten fällig',
+        nothing_due_sub: 'Komm morgen wieder oder füge neue Wörter hinzu.',
+        nothing_in_artikel: 'Artikel-Deck ist leer',
+        nothing_in_artikel_sub: 'Karten erscheinen hier, wenn du in der allgemeinen Übung „Artikel falsch" wählst.',
+        nothing_in_verb: 'Verben-Deck ist leer',
+        nothing_in_verb_sub: 'Karten erscheinen hier, wenn du in der allgemeinen Übung „Details falsch" wählst.',
+        next: 'Weiter →',
+        check: 'Prüfen',
+        conjugation: 'Konjugation',
+        perfekt: 'Perfekt (3.Sg)',
+        praeteritum: 'Präteritum (3.Sg)',
+        prepositions: 'Präpositionen',
+        what_case: 'Welcher Fall verlangt',
+        with_prep: 'mit',
+        object_case: 'Objektkasus',
+        all: 'Alle', nomen: 'Nomen', verben: 'Verben', eigene: 'Eigene',
+        and_more: 'Karten',
+        more_suffix: 'weitere',
+        no_cards_match: 'Keine Karten passen zum Filter.',
+        confirm_delete: 'Wirklich löschen?',
+        nomen_tab: 'Nomen', verb_tab: 'Verb',
+        article_label: 'Artikel', noun_de: 'Nomen (Deutsch)',
+        plural_label: 'Plural', english_label: 'English (1–3, kommagetrennt)',
+        example_de: 'Beispielsatz (Deutsch)', example_en: 'Beispielsatz (English)',
+        niveau: 'Niveau',
+        verb_inf: 'Verb (Infinitiv)',
+        autofill: 'Auto-fill (regelmäßig)',
+        hilfsverb: 'Hilfsverb', objcase_label: 'Objektkasus (optional)',
+        none_label: '—',
+        reflexive_lbl: 'reflexiv (sich)', separable_lbl: 'trennbar', strong_lbl: 'stark',
+        prep_textarea: 'Präpositionen — eine pro Zeile, Format: prep|Akk/Dat|Bedeutung',
+        save: 'Speichern', saved: 'Gespeichert',
+        ich_weiss_artikel: 'Wähle den richtigen Artikel',
+        verb_drill_intro: 'Drill: Schwächen üben',
+        verb_drill_done: 'Alles richtig! 🎉',
+        verb_drill_partial: 'Einige Fehler — bleibe in der Box.',
+        verb_drill_continue: 'Weiter →',
+        graduated: 'Karte hat das Deck verlassen!',
+      },
+      en: {
+        practice_general: 'General practice',
+        practice_general_sub: 'Nouns + Verbs',
+        practice_artikel: 'Articles',
+        practice_artikel_sub: 'der/die/das',
+        practice_verb: 'Verbs',
+        practice_verb_sub: 'Conjugation',
+        all_cards: 'All cards',
+        your_progress: 'Your progress',
+        words_in_system: 'words in system',
+        every_day: 'Every day',
+        every_2_days: 'Every 2 days',
+        every_4_days: 'Every 4 days',
+        every_8_days: 'Every 8 days',
+        every_16_days: 'Every 16 days',
+        add_word: 'Add word',
+        due_today: 'today',
+        knew_it: 'I knew it',
+        artikel_wrong: 'Article wrong → Articles deck',
+        details_wrong: 'Details wrong → Verbs deck',
+        didnt_know: "I didn't know it",
+        tap_to_flip: 'Tap to flip',
+        plural: 'Plural',
+        nothing_due: 'No cards due',
+        nothing_due_sub: 'Come back tomorrow or add new words.',
+        nothing_in_artikel: 'Articles deck is empty',
+        nothing_in_artikel_sub: 'Cards appear here when you tap "Article wrong" in general practice.',
+        nothing_in_verb: 'Verbs deck is empty',
+        nothing_in_verb_sub: 'Cards appear here when you tap "Details wrong" in general practice.',
+        next: 'Next →',
+        check: 'Check',
+        conjugation: 'Conjugation',
+        perfekt: 'Perfekt (3.Sg)',
+        praeteritum: 'Präteritum (3.Sg)',
+        prepositions: 'Prepositions',
+        what_case: 'What case does',
+        with_prep: 'take with',
+        object_case: 'Object case',
+        all: 'All', nomen: 'Nouns', verben: 'Verbs', eigene: 'Mine',
+        and_more: 'cards',
+        more_suffix: 'more',
+        no_cards_match: 'No cards match the filter.',
+        confirm_delete: 'Really delete?',
+        nomen_tab: 'Noun', verb_tab: 'Verb',
+        article_label: 'Article', noun_de: 'Noun (German)',
+        plural_label: 'Plural', english_label: 'English (1–3, comma-separated)',
+        example_de: 'Example sentence (German)', example_en: 'Example sentence (English)',
+        niveau: 'Level',
+        verb_inf: 'Verb (infinitive)',
+        autofill: 'Auto-fill (regular)',
+        hilfsverb: 'Auxiliary', objcase_label: 'Object case (optional)',
+        none_label: '—',
+        reflexive_lbl: 'reflexive (sich)', separable_lbl: 'separable', strong_lbl: 'strong',
+        prep_textarea: 'Prepositions — one per line, format: prep|Akk/Dat|meaning',
+        save: 'Save', saved: 'Saved',
+        ich_weiss_artikel: 'Choose the correct article',
+        verb_drill_intro: 'Drill: practice weaknesses',
+        verb_drill_done: 'All correct! 🎉',
+        verb_drill_partial: 'Some mistakes — staying in current box.',
+        verb_drill_continue: 'Continue →',
+        graduated: 'Card graduated from deck!',
+      }
+    };
+
+    /* ===========================================================================
+     * STORAGE
+     * ===========================================================================*/
+    const KEY_CARDS = 'chatulileo_cards_v1';
+    const KEY_LEITNER = 'chatulileo_leitner_v1';
+    const KEY_ARTIKEL = 'chatulileo_artikel_v1';
+    const KEY_VERB = 'chatulileo_verb_v1';
+    const KEY_TODAY = 'chatulileo_today_v1';
+    const KEY_LANG = 'chatulileo_lang_v1';
+
+    function load(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (e) { return fallback; }
+    }
+    function save(key, val) {
+      try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+    }
+
+    /* ===========================================================================
+     * STATE
+     * ===========================================================================*/
+    const state = {
+      lang: load(KEY_LANG, 'de'),
+      userCards: load(KEY_CARDS, []),
+      leitner: load(KEY_LEITNER, {}),    // { cardId: {box: 1-5, dueDate: 'YYYY-MM-DD'} }
+      artikel: load(KEY_ARTIKEL, {}),    // { cardId: {box: 1-3, correctCount: 0, dueDate} }
+      verbdeck: load(KEY_VERB, {}),      // { cardId: {box, correctCount, dueDate, weaknessProfile: []} }
+      today: load(KEY_TODAY, { date: '', l1Count: 0, introduced: [] }),
+      currentView: 'home',
+      practiceQueue: [],
+      practiceIdx: 0,
+      practiceCardFlipped: false,
+      artikelQueue: [],
+      artikelIdx: 0,
+      verbQueue: [],
+      verbIdx: 0,
+      verbStep: null,
+      verbStepData: null,
+      addTab: 'noun',
+      browseFilter: 'all',
+      progressExpanded: false,
+    };
+
+    /* ===========================================================================
+     * UTILITIES
+     * ===========================================================================*/
+    function t(key) { return STRINGS[state.lang][key] || key; }
+
+    function todayStr() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+
+    function addDays(dateStr, n) {
+      const d = new Date(dateStr + 'T12:00:00');
+      d.setDate(d.getDate() + n);
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+
+    function isDue(dateStr) {
+      return dateStr <= todayStr();
+    }
+
+    const LEITNER_INTERVALS = [1, 1, 2, 4, 8, 16]; // index by box (1-5); 0 unused
+    const MINI_INTERVALS = [1, 1, 3, 7]; // for artikel/verb decks (1-3)
+    const L1_DAILY_CAP = 50;
+
+    function getAllCards() {
+      // Merge seed + user-added; user can't overwrite seed ids
+      const seedById = {};
+      (window.SEED_CARDS || []).forEach(c => { seedById[c.id] = c; });
+      const merged = [...(window.SEED_CARDS || [])];
+      state.userCards.forEach(uc => {
+        if (!seedById[uc.id]) merged.push(uc);
+      });
+      return merged;
+    }
+
+    function getCardById(id) {
+      return getAllCards().find(c => c.id === id);
+    }
+
+    function ensureTodayFresh() {
+      const today = todayStr();
+      if (state.today.date !== today) {
+        state.today = { date: today, l1Count: 0, introduced: [] };
+        save(KEY_TODAY, state.today);
+      }
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('visible');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => el.classList.remove('visible'), 2000);
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    /* ===========================================================================
+     * CASE-COLORING PARSER
+     *   Markup: [prep|case]phrase[/]
+     *   prep can be a real preposition word (e.g. "bei") or the literal "verb"
+     *     for verb-forced cases. case is one of nom/akk/dat/gen.
+     * ===========================================================================*/
+    function renderExample(de) {
+      // Tokenize. Pattern: [WORD|CASE]PHRASE[/]
+      const re = /\[([^|\]]+)\|(nom|akk|dat|gen)\]([^\[]+)\[\/\]/gi;
+      let result = '';
+      let last = 0;
+      let m;
+      while ((m = re.exec(de)) !== null) {
+        result += escHtml(de.slice(last, m.index));
+        const prep = m[1];
+        const cs = m[2].toLowerCase();
+        const phrase = m[3];
+        if (prep.toLowerCase() === 'verb') {
+          // verb-forced case: just color the phrase, no prep prefix
+          result += `<span class="case-pill ${cs}">${escHtml(phrase)}</span>`;
+        } else {
+          // preposition + colored phrase
+          result += `<span class="prep-color">${escHtml(prep)}</span> <span class="case-pill ${cs}">${escHtml(phrase)}</span>`;
+        }
+        last = re.lastIndex;
+      }
+      result += escHtml(de.slice(last));
+      return result;
+    }
+
+    /* ===========================================================================
+     * QUEUE BUILDERS
+     * ===========================================================================*/
+    function buildGeneralQueue() {
+      ensureTodayFresh();
+      const allCards = getAllCards();
+      const due = [];
+      const newCandidates = [];
+
+      allCards.forEach(card => {
+        const entry = state.leitner[card.id];
+        if (!entry) {
+          newCandidates.push(card);
+        } else if (isDue(entry.dueDate)) {
+          due.push({ card, entry });
+        }
+      });
+
+      // 1. L1 cards: cards already in box 1 that are due, plus new cards being introduced.
+      //   Cap total L1 cards seen today at L1_DAILY_CAP.
+      const l1Due = due.filter(x => x.entry.box === 1).map(x => x.card);
+      const otherDue = due.filter(x => x.entry.box !== 1).map(x => x.card);
+
+      // How many "L1 slots" remaining today
+      const slotsLeft = Math.max(0, L1_DAILY_CAP - state.today.l1Count);
+
+      // Build L1 portion: existing L1 due first, then new cards to fill slots
+      const l1Today = [];
+      for (const c of l1Due) {
+        if (l1Today.length >= slotsLeft) break;
+        l1Today.push(c);
+      }
+      const remainingSlots = slotsLeft - l1Today.length;
+      const newToIntroduce = [];
+      for (const c of newCandidates) {
+        if (newToIntroduce.length >= remainingSlots) break;
+        if (!state.today.introduced.includes(c.id)) {
+          newToIntroduce.push(c);
+        }
+      }
+
+      const queue = shuffle([...l1Today, ...newToIntroduce, ...otherDue]);
+      return queue;
+    }
+
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function countDueGeneral() {
+      ensureTodayFresh();
+      return buildGeneralQueue().length;
+    }
+
+    function countDueArtikel() {
+      ensureTodayFresh();
+      return Object.values(state.artikel).filter(e => isDue(e.dueDate)).length;
+    }
+
+    function countDueVerb() {
+      ensureTodayFresh();
+      return Object.values(state.verbdeck).filter(e => isDue(e.dueDate)).length;
+    }
+
+    /* ===========================================================================
+     * GRADING — General Leitner
+     * ===========================================================================*/
+    function gradeGeneral(cardId, action) {
+      // action: 'knew' | 'detail_wrong' | 'didnt_know'
+      const today = todayStr();
+      let entry = state.leitner[cardId];
+      const isNew = !entry;
+
+      if (isNew) {
+        // First time touching this card
+        entry = { box: 1, dueDate: today };
+        state.today.introduced.push(cardId);
+        state.today.l1Count += 1;
+      }
+
+      if (action === 'knew') {
+        entry.box = Math.min(5, entry.box + 1);
+      } else if (action === 'detail_wrong') {
+        // Stays in current box for general purposes; specialized deck gets the card
+        const card = getCardById(cardId);
+        if (card.type === 'noun') {
+          // Add to artikel deck if not already there
+          if (!state.artikel[cardId]) {
+            state.artikel[cardId] = { box: 1, correctCount: 0, dueDate: today };
+          }
+        } else {
+          // Verb: add to verb deck with FULL weakness profile
+          if (!state.verbdeck[cardId]) {
+            state.verbdeck[cardId] = {
+              box: 1,
+              correctCount: 0,
+              dueDate: today,
+              weaknessProfile: buildFullWeaknessProfile(card),
+            };
+          }
+        }
+      } else if (action === 'didnt_know') {
+        entry.box = 1;
+        if (!isNew) {
+          // Count as an L1 use today
+          state.today.l1Count += 1;
+        }
+      }
+
+      entry.dueDate = addDays(today, LEITNER_INTERVALS[entry.box]);
+      state.leitner[cardId] = entry;
+      save(KEY_LEITNER, state.leitner);
+      save(KEY_ARTIKEL, state.artikel);
+      save(KEY_VERB, state.verbdeck);
+      save(KEY_TODAY, state.today);
+    }
+
+    function buildFullWeaknessProfile(card) {
+      const items = [];
+      ['ich','du','er','wir','ihr','sie'].forEach(p => items.push({ kind: 'conj', pronoun: p }));
+      items.push({ kind: 'perfekt' });
+      items.push({ kind: 'praeteritum' });
+      if (card.prepositions && card.prepositions.length > 0) {
+        items.push({ kind: 'prepositions' });
+        card.prepositions.forEach((p, i) => items.push({ kind: 'prep_case', idx: i }));
+      }
+      if (card.objectCase) items.push({ kind: 'object_case' });
+      return items;
+    }
+
+    /* ===========================================================================
+     * GRADING — Mini decks (artikel & verb)
+     * ===========================================================================*/
+    function gradeArtikel(cardId, correct) {
+      const today = todayStr();
+      const entry = state.artikel[cardId] || { box: 1, correctCount: 0, dueDate: today };
+      if (correct) {
+        if (entry.box < 3) {
+          entry.box += 1;
+          entry.correctCount = 0;
+        } else {
+          entry.correctCount += 1;
+        }
+        if (entry.box === 3 && entry.correctCount >= 3) {
+          // Graduate — remove from deck
+          delete state.artikel[cardId];
+          save(KEY_ARTIKEL, state.artikel);
+          showToast(t('graduated'));
+          return;
+        }
+      } else {
+        entry.box = 1;
+        entry.correctCount = 0;
+      }
+      entry.dueDate = addDays(today, MINI_INTERVALS[entry.box]);
+      state.artikel[cardId] = entry;
+      save(KEY_ARTIKEL, state.artikel);
+    }
+
+    function gradeVerbDrill(cardId, allCorrect) {
+      const today = todayStr();
+      const entry = state.verbdeck[cardId];
+      if (!entry) return;
+      if (allCorrect) {
+        if (entry.box < 3) {
+          entry.box += 1;
+          entry.correctCount = 0;
+        } else {
+          entry.correctCount += 1;
+        }
+        if (entry.box === 3 && entry.correctCount >= 3) {
+          delete state.verbdeck[cardId];
+          save(KEY_VERB, state.verbdeck);
+          showToast(t('graduated'));
+          return;
+        }
+      }
+      // Partial OR full correct: the next due date based on the (possibly) new box
+      entry.dueDate = addDays(today, MINI_INTERVALS[entry.box]);
+      state.verbdeck[cardId] = entry;
+      save(KEY_VERB, state.verbdeck);
+    }
+
+    /* ===========================================================================
+     * STRICT MATCHING (with case-insensitive + umlaut alternatives only)
+     * ===========================================================================*/
+    function normalizeAnswer(s) {
+      return String(s || '').trim().toLowerCase()
+        .replace(/ae/g, 'ä').replace(/oe/g, 'ö').replace(/ue/g, 'ü').replace(/ss/g, 'ß');
+    }
+    function matchesAnswer(input, expected) {
+      return normalizeAnswer(input) === normalizeAnswer(expected);
+    }
+
+    /* ===========================================================================
+     * VIEW SWITCHING
+     * ===========================================================================*/
+    function showView(name) {
+      state.currentView = name;
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      const el = document.getElementById('view-' + name);
+      if (el) el.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    /* ===========================================================================
+     * RENDER — HOME
+     * ===========================================================================*/
+    function renderHome() {
+      const dueGen = countDueGeneral();
+      const dueArt = countDueArtikel();
+      const dueVerb = countDueVerb();
+      const totalInSystem = Object.keys(state.leitner).length;
+
+      const boxCounts = [0,0,0,0,0]; // index 0-4 for boxes 1-5
+      Object.values(state.leitner).forEach(e => { if (e.box >= 1 && e.box <= 5) boxCounts[e.box-1] += 1; });
+      const maxBox = Math.max(1, ...boxCounts);
+      const labels = [t('every_day'), t('every_2_days'), t('every_4_days'), t('every_8_days'), t('every_16_days')];
+
+      const html = `
+        <div class="tile-stack">
+          <div class="tile tile-big" id="tile-general">
+            <div class="count-pill on-orange">${dueGen} ${t('due_today')}</div>
+            <div class="tile-title">${t('practice_general')}</div>
+            <div class="tile-sub">${t('practice_general_sub')}</div>
+          </div>
+          <div class="tile-row">
+            <div class="tile tile-small" id="tile-artikel">
+              <div class="count-pill on-white">${dueArt}</div>
+              <div class="tile-title">${t('practice_artikel')}</div>
+              <div class="tile-sub">${t('practice_artikel_sub')}</div>
+            </div>
+            <div class="tile tile-small" id="tile-verb">
+              <div class="count-pill on-white">${dueVerb}</div>
+              <div class="tile-title">${t('practice_verb')}</div>
+              <div class="tile-sub">${t('practice_verb_sub')}</div>
+            </div>
+          </div>
+          <div class="row-tile" id="row-allcards">
+            <span>${t('all_cards')}</span>
+            <span class="row-arrow">→</span>
+          </div>
+          <div class="row-tile progress-tile ${state.progressExpanded ? 'expanded' : ''}" id="row-progress">
+            <div class="progress-head">
+              <div class="progress-head-stack">
+                <span>${t('your_progress')}</span>
+                <span class="row-tile-sub">${totalInSystem} ${t('words_in_system')}</span>
+              </div>
+              <span class="chevron">⌄</span>
+            </div>
+            <div class="progress-body">
+              ${boxCounts.map((c, i) => `
+                <div class="progress-row">
+                  <div class="progress-label">${labels[i]}</div>
+                  <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${maxBox > 0 ? (c / maxBox) * 100 : 0}%"></div></div>
+                  <div class="progress-count">${c}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('view-home').innerHTML = html;
+
+      document.getElementById('tile-general').addEventListener('click', () => startGeneralPractice());
+      document.getElementById('tile-artikel').addEventListener('click', () => startArtikelPractice());
+      document.getElementById('tile-verb').addEventListener('click', () => startVerbPractice());
+      document.getElementById('row-allcards').addEventListener('click', () => { renderBrowse(); showView('browse'); });
+      document.getElementById('row-progress').addEventListener('click', () => {
+        state.progressExpanded = !state.progressExpanded;
+        renderHome();
+      });
+    }
+
+    /* ===========================================================================
+     * RENDER — GENERAL PRACTICE
+     * ===========================================================================*/
+    function startGeneralPractice() {
+      state.practiceQueue = buildGeneralQueue();
+      state.practiceIdx = 0;
+      state.practiceCardFlipped = false;
+      renderPractice();
+      showView('practice');
+    }
+
+    function renderPractice() {
+      const view = document.getElementById('view-practice');
+      const queue = state.practiceQueue;
+
+      if (state.practiceIdx >= queue.length) {
+        view.innerHTML = `
+          <div class="subhead">
+            <button class="back-btn" id="practice-back">←</button>
+            <div class="subhead-title">${t('practice_general')}</div>
+          </div>
+          <div class="empty">
+            <span class="empty-emoji">✨</span>
+            <div class="empty-title">${t('nothing_due')}</div>
+            <div class="empty-sub">${t('nothing_due_sub')}</div>
+          </div>`;
+        document.getElementById('practice-back').onclick = goHome;
+        return;
+      }
+
+      const card = queue[state.practiceIdx];
+      const flipped = state.practiceCardFlipped;
+      const total = queue.length;
+      const pos = state.practiceIdx + 1;
+
+      const buttons = card.type === 'noun'
+        ? [
+            { cls: 'success', label: t('knew_it'), action: 'knew' },
+            { cls: 'warning', label: t('artikel_wrong'), action: 'detail_wrong' },
+            { cls: 'danger', label: t('didnt_know'), action: 'didnt_know' },
+          ]
+        : [
+            { cls: 'success', label: t('knew_it'), action: 'knew' },
+            { cls: 'warning', label: t('details_wrong'), action: 'detail_wrong' },
+            { cls: 'danger', label: t('didnt_know'), action: 'didnt_know' },
+          ];
+
+      const front = `<div class="fc-front-en">${escHtml(card.en.join(', '))}</div>
+                     <div class="fc-tap-hint">${t('tap_to_flip')}</div>`;
+
+      let back = '';
+      if (card.type === 'noun') {
+        back = `
+          <div class="fc-back">
+            <div class="fc-noun-line"><span class="fc-noun-article">${escHtml(card.article)}</span>${escHtml(card.word)}</div>
+            <div class="fc-plural">${t('plural')}: ${escHtml(card.plural)}</div>
+            <div class="fc-en-trans">${escHtml(card.en.join(', '))}</div>
+            ${card.example ? `
+              <div class="fc-example">
+                <div class="fc-example-de">${renderExample(card.example.de)}</div>
+                <div class="fc-example-en">${escHtml(card.example.en)}</div>
+              </div>` : ''}
+          </div>`;
+      } else {
+        const meta = [];
+        if (card.reflexive) meta.push('reflexiv');
+        if (card.separable) meta.push('trennbar');
+        meta.push(card.strong ? 'stark' : 'schwach');
+        if (card.objectCase) meta.push('+ ' + card.objectCase);
+
+        const prepHtml = (card.prepositions || []).map(p => `
+          <div class="fc-prep-row">
+            <span class="prep-word">${escHtml(p.prep)}</span>
+            <span class="case-badge ${p.case.toLowerCase()}">${escHtml(p.case)}</span>
+            <span class="prep-meaning">— ${escHtml(p.meaning)}</span>
+          </div>`).join('');
+
+        const conjOrder = [['ich','wir'],['du','ihr'],['er','sie']];
+        const pronLabel = { ich: 'ich', du: 'du', er: 'er/sie/es', wir: 'wir', ihr: 'ihr', sie: 'sie/Sie' };
+        let conjHtml = '';
+        conjOrder.forEach(pair => {
+          pair.forEach(p => {
+            conjHtml += `<div class="conj-cell"><span class="conj-pron">${pronLabel[p]}</span><span class="conj-form">${escHtml(card.conj[p])}</span></div>`;
+          });
+        });
+
+        back = `
+          <div class="fc-back">
+            <div class="fc-verb-line">${escHtml(card.infinitive)}</div>
+            <div class="fc-en-trans">${escHtml(card.en.join(', '))}</div>
+            ${meta.length ? `<div class="fc-meta">${meta.map(m => `<span class="meta-pill">${escHtml(m)}</span>`).join('')}</div>` : ''}
+            ${prepHtml ? `<div class="fc-prep-list">${prepHtml}</div>` : ''}
+            <div class="fc-conj">${conjHtml}</div>
+            <div class="fc-perfekt-line">Perfekt:<strong>${escHtml(card.perfekt)}</strong> · Prät.:<strong>${escHtml(card.praeteritum)}</strong></div>
+            ${card.example ? `
+              <div class="fc-example">
+                <div class="fc-example-de">${renderExample(card.example.de)}</div>
+                <div class="fc-example-en">${escHtml(card.example.en)}</div>
+              </div>` : ''}
+          </div>`;
+      }
+
+      view.innerHTML = `
+        <div class="subhead">
+          <button class="back-btn" id="practice-back">←</button>
+          <div class="subhead-title">${t('practice_general')}</div>
+          <div class="subhead-spacer"></div>
+          <div class="subhead-meta">${pos} / ${total}</div>
+        </div>
+        <div class="deck-wrap">
+          <div class="flashcard" id="flashcard">${flipped ? back : front}</div>
+          ${flipped ? `
+            <div class="action-stack">
+              ${buttons.map(b => `<button class="action-btn ${b.cls}" data-action="${b.action}">${escHtml(b.label)}</button>`).join('')}
+            </div>` : ''}
+        </div>`;
+
+      document.getElementById('practice-back').onclick = goHome;
+      document.getElementById('flashcard').onclick = () => {
+        state.practiceCardFlipped = !state.practiceCardFlipped;
+        renderPractice();
+      };
+      if (flipped) {
+        view.querySelectorAll('.action-btn').forEach(btn => {
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            const action = btn.dataset.action;
+            gradeGeneral(card.id, action);
+            state.practiceIdx += 1;
+            state.practiceCardFlipped = false;
+            renderPractice();
+          };
+        });
+      }
+    }
+
+    /* ===========================================================================
+     * RENDER — ARTIKEL DECK
+     * ===========================================================================*/
+    function startArtikelPractice() {
+      ensureTodayFresh();
+      const dueIds = Object.entries(state.artikel)
+        .filter(([_, e]) => isDue(e.dueDate))
+        .map(([id]) => id);
+      state.artikelQueue = shuffle(dueIds);
+      state.artikelIdx = 0;
+      state.artikelChoice = null;
+      renderArtikel();
+      showView('artikel');
+    }
+
+    function renderArtikel() {
+      const view = document.getElementById('view-artikel');
+      const queue = state.artikelQueue;
+
+      if (queue.length === 0 || state.artikelIdx >= queue.length) {
+        view.innerHTML = `
+          <div class="subhead">
+            <button class="back-btn" id="art-back">←</button>
+            <div class="subhead-title">${t('practice_artikel')}</div>
+          </div>
+          <div class="empty">
+            <span class="empty-emoji">📭</span>
+            <div class="empty-title">${queue.length === 0 ? t('nothing_in_artikel') : t('nothing_due')}</div>
+            <div class="empty-sub">${queue.length === 0 ? t('nothing_in_artikel_sub') : t('nothing_due_sub')}</div>
+          </div>`;
+        document.getElementById('art-back').onclick = goHome;
+        return;
+      }
+
+      const cardId = queue[state.artikelIdx];
+      const card = getCardById(cardId);
+      if (!card || card.type !== 'noun') {
+        // Skip orphaned/non-noun entries
+        state.artikelIdx += 1;
+        renderArtikel();
+        return;
+      }
+
+      const choice = state.artikelChoice;
+      const correct = card.article;
+
+      view.innerHTML = `
+        <div class="subhead">
+          <button class="back-btn" id="art-back">←</button>
+          <div class="subhead-title">${t('practice_artikel')}</div>
+          <div class="subhead-spacer"></div>
+          <div class="subhead-meta">${state.artikelIdx + 1} / ${queue.length}</div>
+        </div>
+        <div class="artikel-prompt">
+          <div class="artikel-blank"><span class="blank">___</span>${escHtml(card.word)}</div>
+          <div class="artikel-en">${escHtml(card.en.join(', '))}</div>
+        </div>
+        <div class="artikel-choices">
+          ${['der','die','das'].map(a => {
+            let cls = '';
+            if (choice) {
+              if (a === correct) cls = 'correct';
+              else if (a === choice && choice !== correct) cls = 'wrong';
+            }
+            return `<button class="artikel-choice ${cls}" data-art="${a}" ${choice ? 'disabled' : ''}>${a}</button>`;
+          }).join('')}
+        </div>
+        ${choice ? `
+          <div class="artikel-reveal">
+            <div class="artikel-reveal-noun">${escHtml(card.article)} ${escHtml(card.word)}</div>
+            <div class="artikel-reveal-plural">${t('plural')}: ${escHtml(card.plural)}</div>
+            ${card.example ? `
+              <div class="artikel-reveal-example">${renderExample(card.example.de)}</div>
+              <div class="artikel-reveal-example-en">${escHtml(card.example.en)}</div>` : ''}
+          </div>
+          <button class="next-btn" id="art-next">${t('next')}</button>` : ''}
+      `;
+
+      document.getElementById('art-back').onclick = goHome;
+      view.querySelectorAll('.artikel-choice').forEach(btn => {
+        btn.onclick = () => {
+          if (state.artikelChoice) return;
+          state.artikelChoice = btn.dataset.art;
+          gradeArtikel(card.id, state.artikelChoice === correct);
+          renderArtikel();
+        };
+      });
+      const nextBtn = document.getElementById('art-next');
+      if (nextBtn) nextBtn.onclick = () => {
+        state.artikelIdx += 1;
+        state.artikelChoice = null;
+        renderArtikel();
+      };
+    }
+
+    /* ===========================================================================
+     * RENDER — VERB DRILL DECK
+     * ===========================================================================*/
+    function startVerbPractice() {
+      ensureTodayFresh();
+      const dueIds = Object.entries(state.verbdeck)
+        .filter(([_, e]) => isDue(e.dueDate))
+        .map(([id]) => id);
+      state.verbQueue = shuffle(dueIds);
+      state.verbIdx = 0;
+      state.verbStep = null;
+      renderVerbDeck();
+      showView('verbdeck');
+    }
+
+    function renderVerbDeck() {
+      const view = document.getElementById('view-verbdeck');
+      const queue = state.verbQueue;
+
+      if (queue.length === 0 || state.verbIdx >= queue.length) {
+        view.innerHTML = `
+          <div class="subhead">
+            <button class="back-btn" id="vd-back">←</button>
+            <div class="subhead-title">${t('practice_verb')}</div>
+          </div>
+          <div class="empty">
+            <span class="empty-emoji">📭</span>
+            <div class="empty-title">${queue.length === 0 ? t('nothing_in_verb') : t('nothing_due')}</div>
+            <div class="empty-sub">${queue.length === 0 ? t('nothing_in_verb_sub') : t('nothing_due_sub')}</div>
+          </div>`;
+        document.getElementById('vd-back').onclick = goHome;
+        return;
+      }
+
+      const cardId = queue[state.verbIdx];
+      const card = getCardById(cardId);
+      const entry = state.verbdeck[cardId];
+      if (!card || card.type !== 'verb' || !entry) {
+        state.verbIdx += 1; renderVerbDeck(); return;
+      }
+
+      // Initialize step session if needed
+      if (!state.verbStep) {
+        state.verbStep = { phase: pickFirstPhase(entry.weaknessProfile), results: {}, drillCorrected: [] };
+        state.verbStepData = null;
+      }
+      const phase = state.verbStep.phase;
+      if (!phase) {
+        // No items to drill — finalize as all correct
+        finalizeVerbDrill(card, entry, true);
+        return;
+      }
+
+      const totalCount = queue.length;
+      const subhead = `
+        <div class="subhead">
+          <button class="back-btn" id="vd-back">←</button>
+          <div class="subhead-title">${t('practice_verb')}</div>
+          <div class="subhead-spacer"></div>
+          <div class="subhead-meta">${state.verbIdx + 1} / ${totalCount}</div>
+        </div>`;
+
+      if (phase === 'conj') {
+        renderVerbConjStep(view, subhead, card, entry);
+      } else if (phase === 'perfekt') {
+        renderVerbSimpleTextStep(view, subhead, card, entry, 'perfekt', t('perfekt'), card.perfekt);
+      } else if (phase === 'praeteritum') {
+        renderVerbSimpleTextStep(view, subhead, card, entry, 'praeteritum', t('praeteritum'), card.praeteritum);
+      } else if (phase === 'prepositions') {
+        renderVerbPrepStep(view, subhead, card, entry);
+      } else if (phase === 'prep_case') {
+        renderVerbPrepCaseStep(view, subhead, card, entry);
+      } else if (phase === 'object_case') {
+        renderVerbObjectCaseStep(view, subhead, card, entry);
+      } else if (phase === 'done') {
+        finalizeVerbDrillFromResults(card, entry);
+      }
+
+      const back = document.getElementById('vd-back');
+      if (back) back.onclick = goHome;
+    }
+
+    function pickFirstPhase(profile) {
+      if (profile.some(i => i.kind === 'conj')) return 'conj';
+      if (profile.some(i => i.kind === 'perfekt')) return 'perfekt';
+      if (profile.some(i => i.kind === 'praeteritum')) return 'praeteritum';
+      if (profile.some(i => i.kind === 'prepositions')) return 'prepositions';
+      if (profile.some(i => i.kind === 'prep_case')) return 'prep_case';
+      if (profile.some(i => i.kind === 'object_case')) return 'object_case';
+      return null;
+    }
+
+    function nextPhase(card, entry, currentPhase) {
+      // Walk through phases in order; skip ones with no remaining items
+      const order = ['conj','perfekt','praeteritum','prepositions','prep_case','object_case'];
+      const startIdx = order.indexOf(currentPhase) + 1;
+      for (let i = startIdx; i < order.length; i++) {
+        const p = order[i];
+        if (entry.weaknessProfile.some(item => item.kind === p)) {
+          return p;
+        }
+      }
+      return 'done';
+    }
+
+    function renderVerbConjStep(view, subhead, card, entry) {
+      const items = entry.weaknessProfile.filter(i => i.kind === 'conj');
+      const submitted = state.verbStepData && state.verbStepData.submitted;
+      const inputs = state.verbStepData && state.verbStepData.inputs ? state.verbStepData.inputs : {};
+      const pronLabel = { ich: 'ich', du: 'du', er: 'er/sie/es', wir: 'wir', ihr: 'ihr', sie: 'sie/Sie' };
+
+      const rowsHtml = items.map(it => {
+        const expected = card.conj[it.pronoun];
+        const userVal = inputs[it.pronoun] || '';
+        let cls = '';
+        let extra = '';
+        if (submitted) {
+          const ok = matchesAnswer(userVal, expected);
+          cls = ok ? 'correct' : 'wrong';
+          if (!ok) extra = `<div class="drill-correct-answer">→ <strong>${escHtml(expected)}</strong></div>`;
+        }
+        return `
+          <div>
+            <div class="drill-conj-row">
+              <div class="drill-conj-pron">${pronLabel[it.pronoun]}</div>
+              <input class="drill-input ${cls}" data-pron="${it.pronoun}" value="${escHtml(userVal)}" autocomplete="off" autocapitalize="off" spellcheck="false" ${submitted ? 'disabled' : ''}>
+            </div>
+            ${extra}
+          </div>`;
+      }).join('');
+
+      view.innerHTML = `
+        ${subhead}
+        <div class="drill-card">
+          <div class="drill-step-label">${t('conjugation')}</div>
+          <div class="drill-verb">${escHtml(card.infinitive)}</div>
+          <div class="drill-conj-list">${rowsHtml}</div>
+          ${submitted
+            ? `<button class="next-btn" id="vd-continue">${t('verb_drill_continue')}</button>`
+            : `<button class="next-btn" id="vd-check">${t('check')}</button>`}
+        </div>`;
+
+      document.getElementById('vd-back').onclick = goHome;
+      const inputsEls = view.querySelectorAll('.drill-input');
+      function readInputs() {
+        const obj = {};
+        inputsEls.forEach(el => { obj[el.dataset.pron] = el.value; });
+        return obj;
+      }
+      const checkBtn = document.getElementById('vd-check');
+      if (checkBtn) checkBtn.onclick = () => {
+        const inputObj = readInputs();
+        // Update profile: remove correct items
+        const newProfile = entry.weaknessProfile.filter(it => {
+          if (it.kind !== 'conj') return true;
+          const ok = matchesAnswer(inputObj[it.pronoun] || '', card.conj[it.pronoun]);
+          if (ok) {
+            state.verbStep.drillCorrected.push({ kind: 'conj', pronoun: it.pronoun });
+            return false;
+          }
+          return true;
+        });
+        entry.weaknessProfile = newProfile;
+        save(KEY_VERB, state.verbdeck);
+        state.verbStepData = { submitted: true, inputs: inputObj };
+        renderVerbDeck();
+      };
+      const contBtn = document.getElementById('vd-continue');
+      if (contBtn) contBtn.onclick = () => {
+        state.verbStep.phase = nextPhase(card, entry, 'conj');
+        state.verbStepData = null;
+        renderVerbDeck();
+      };
+    }
+
+    function renderVerbSimpleTextStep(view, subhead, card, entry, kind, label, expected) {
+      const submitted = state.verbStepData && state.verbStepData.submitted;
+      const userVal = state.verbStepData && state.verbStepData.input ? state.verbStepData.input : '';
+      let cls = '', extra = '';
+      if (submitted) {
+        const ok = matchesAnswer(userVal, expected);
+        cls = ok ? 'correct' : 'wrong';
+        if (!ok) extra = `<div class="drill-correct-answer">→ <strong>${escHtml(expected)}</strong></div>`;
+      }
+
+      view.innerHTML = `
+        ${subhead}
+        <div class="drill-card">
+          <div class="drill-step-label">${escHtml(label)}</div>
+          <div class="drill-verb">${escHtml(card.infinitive)}</div>
+          <div>
+            <div class="drill-conj-row" style="grid-template-columns: 1fr;">
+              <input class="drill-input ${cls}" id="vd-input" value="${escHtml(userVal)}" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${kind === 'perfekt' ? 'z.B. hat gespielt' : 'z.B. spielte'}" ${submitted ? 'disabled' : ''}>
+            </div>
+            ${extra}
+          </div>
+          ${submitted
+            ? `<button class="next-btn" id="vd-continue">${t('verb_drill_continue')}</button>`
+            : `<button class="next-btn" id="vd-check">${t('check')}</button>`}
+        </div>`;
+
+      document.getElementById('vd-back').onclick = goHome;
+      const checkBtn = document.getElementById('vd-check');
+      if (checkBtn) checkBtn.onclick = () => {
+        const val = document.getElementById('vd-input').value;
+        const ok = matchesAnswer(val, expected);
+        if (ok) {
+          entry.weaknessProfile = entry.weaknessProfile.filter(it => it.kind !== kind);
+          state.verbStep.drillCorrected.push({ kind });
+          save(KEY_VERB, state.verbdeck);
+        }
+        state.verbStepData = { submitted: true, input: val };
+        renderVerbDeck();
+      };
+      const contBtn = document.getElementById('vd-continue');
+      if (contBtn) contBtn.onclick = () => {
+        state.verbStep.phase = nextPhase(card, entry, kind);
+        state.verbStepData = null;
+        renderVerbDeck();
+      };
+    }
+
+    function renderVerbPrepStep(view, subhead, card, entry) {
+      const PREP_BANK = ['an','auf','bei','für','gegen','in','mit','nach','über','um','von','vor','zu'];
+      const correctSet = new Set((card.prepositions || []).map(p => p.prep));
+      const submitted = state.verbStepData && state.verbStepData.submitted;
+      const selected = state.verbStepData && state.verbStepData.selected ? state.verbStepData.selected : new Set();
+
+      // Build the displayed bank: union of correct preps + a fixed bank
+      const displayBank = Array.from(new Set([...PREP_BANK, ...correctSet]));
+
+      const optsHtml = displayBank.map(p => {
+        let cls = selected.has(p) ? 'selected' : '';
+        if (submitted) {
+          const isCorrect = correctSet.has(p);
+          const wasSelected = selected.has(p);
+          if (isCorrect) cls = 'correct-required';
+          else if (wasSelected && !isCorrect) cls = 'wrong-selected';
+          else cls = '';
+        }
+        return `<button class="prep-option ${cls}" data-prep="${escHtml(p)}" ${submitted ? 'disabled' : ''}>${escHtml(p)}</button>`;
+      }).join('');
+
+      view.innerHTML = `
+        ${subhead}
+        <div class="drill-card">
+          <div class="drill-step-label">${t('prepositions')}</div>
+          <div class="drill-verb">${escHtml(card.infinitive)}</div>
+          <div class="drill-question">${state.lang === 'de' ? 'Wähle ALLE richtigen Präpositionen.' : 'Select ALL correct prepositions.'}</div>
+          <div class="prep-options">${optsHtml}</div>
+          ${submitted
+            ? `<button class="next-btn" id="vd-continue">${t('verb_drill_continue')}</button>`
+            : `<button class="next-btn" id="vd-check">${t('check')}</button>`}
+        </div>`;
+
+      document.getElementById('vd-back').onclick = goHome;
+      view.querySelectorAll('.prep-option').forEach(btn => {
+        btn.onclick = () => {
+          if (submitted) return;
+          const sel = state.verbStepData && state.verbStepData.selected ? state.verbStepData.selected : new Set();
+          const p = btn.dataset.prep;
+          if (sel.has(p)) sel.delete(p); else sel.add(p);
+          state.verbStepData = { selected: sel, submitted: false };
+          renderVerbDeck();
+        };
+      });
+      const checkBtn = document.getElementById('vd-check');
+      if (checkBtn) checkBtn.onclick = () => {
+        // Atomic: must match correctSet exactly
+        const sel = (state.verbStepData && state.verbStepData.selected) || new Set();
+        const exact = sel.size === correctSet.size && [...correctSet].every(p => sel.has(p));
+        if (exact) {
+          entry.weaknessProfile = entry.weaknessProfile.filter(it => it.kind !== 'prepositions');
+          state.verbStep.drillCorrected.push({ kind: 'prepositions' });
+          save(KEY_VERB, state.verbdeck);
+        }
+        state.verbStepData = { selected: sel, submitted: true };
+        renderVerbDeck();
+      };
+      const contBtn = document.getElementById('vd-continue');
+      if (contBtn) contBtn.onclick = () => {
+        state.verbStep.phase = nextPhase(card, entry, 'prepositions');
+        state.verbStepData = null;
+        renderVerbDeck();
+      };
+    }
+
+    function renderVerbPrepCaseStep(view, subhead, card, entry) {
+      // Take the first prep_case item still in profile
+      const item = entry.weaknessProfile.find(i => i.kind === 'prep_case');
+      if (!item) {
+        state.verbStep.phase = nextPhase(card, entry, 'prep_case');
+        renderVerbDeck();
+        return;
+      }
+      const prepObj = card.prepositions[item.idx];
+      const submitted = state.verbStepData && state.verbStepData.submitted;
+      const choice = state.verbStepData && state.verbStepData.choice;
+      const correct = prepObj.case;
+
+      view.innerHTML = `
+        ${subhead}
+        <div class="drill-card">
+          <div class="drill-step-label">${t('prepositions')}</div>
+          <div class="drill-verb">${escHtml(card.infinitive)}</div>
+          <div class="drill-question">${t('what_case')} <strong>${escHtml(card.infinitive)}</strong> ${t('with_prep')} <span class="prep-color">${escHtml(prepObj.prep)}</span>?</div>
+          <div class="case-choice">
+            ${['Akk','Dat'].map(c => {
+              let cls = '';
+              if (submitted) {
+                if (c === correct) cls = 'correct';
+                else if (c === choice && choice !== correct) cls = 'wrong';
+              }
+              return `<button class="case-btn ${cls}" data-case="${c}" ${submitted ? 'disabled' : ''}>${c === 'Akk' ? 'Akkusativ' : 'Dativ'}</button>`;
+            }).join('')}
+          </div>
+          ${submitted
+            ? `<button class="next-btn" id="vd-continue">${t('verb_drill_continue')}</button>`
+            : ''}
+        </div>`;
+
+      document.getElementById('vd-back').onclick = goHome;
+      view.querySelectorAll('.case-btn').forEach(btn => {
+        btn.onclick = () => {
+          if (submitted) return;
+          const c = btn.dataset.case;
+          if (c === correct) {
+            entry.weaknessProfile = entry.weaknessProfile.filter(it =>
+              !(it.kind === 'prep_case' && it.idx === item.idx)
+            );
+            state.verbStep.drillCorrected.push({ kind: 'prep_case', idx: item.idx });
+            save(KEY_VERB, state.verbdeck);
+          }
+          state.verbStepData = { submitted: true, choice: c };
+          renderVerbDeck();
+        };
+      });
+      const contBtn = document.getElementById('vd-continue');
+      if (contBtn) contBtn.onclick = () => {
+        // After this prep_case, check if more prep_case items remain
+        if (entry.weaknessProfile.some(i => i.kind === 'prep_case')) {
+          state.verbStepData = null;
+          renderVerbDeck();
+        } else {
+          state.verbStep.phase = nextPhase(card, entry, 'prep_case');
+          state.verbStepData = null;
+          renderVerbDeck();
+        }
+      };
+    }
+
+    function renderVerbObjectCaseStep(view, subhead, card, entry) {
+      const submitted = state.verbStepData && state.verbStepData.submitted;
+      const choice = state.verbStepData && state.verbStepData.choice;
+      const correct = card.objectCase;
+
+      view.innerHTML = `
+        ${subhead}
+        <div class="drill-card">
+          <div class="drill-step-label">${t('object_case')}</div>
+          <div class="drill-verb">${escHtml(card.infinitive)}</div>
+          <div class="drill-question">${state.lang === 'de' ? 'Welchen Kasus verlangt das Verb für sein Objekt?' : 'Which case does this verb take for its object?'}</div>
+          <div class="case-choice">
+            ${['Akk','Dat'].map(c => {
+              let cls = '';
+              if (submitted) {
+                if (c === correct) cls = 'correct';
+                else if (c === choice && choice !== correct) cls = 'wrong';
+              }
+              return `<button class="case-btn ${cls}" data-case="${c}" ${submitted ? 'disabled' : ''}>${c === 'Akk' ? 'Akkusativ' : 'Dativ'}</button>`;
+            }).join('')}
+          </div>
+          ${submitted
+            ? `<button class="next-btn" id="vd-continue">${t('verb_drill_continue')}</button>`
+            : ''}
+        </div>`;
+
+      document.getElementById('vd-back').onclick = goHome;
+      view.querySelectorAll('.case-btn').forEach(btn => {
+        btn.onclick = () => {
+          if (submitted) return;
+          const c = btn.dataset.case;
+          if (c === correct) {
+            entry.weaknessProfile = entry.weaknessProfile.filter(it => it.kind !== 'object_case');
+            state.verbStep.drillCorrected.push({ kind: 'object_case' });
+            save(KEY_VERB, state.verbdeck);
+          }
+          state.verbStepData = { submitted: true, choice: c };
+          renderVerbDeck();
+        };
+      });
+      const contBtn = document.getElementById('vd-continue');
+      if (contBtn) contBtn.onclick = () => {
+        state.verbStep.phase = nextPhase(card, entry, 'object_case');
+        state.verbStepData = null;
+        renderVerbDeck();
+      };
+    }
+
+    function finalizeVerbDrill(card, entry, allCorrect) {
+      gradeVerbDrill(card.id, allCorrect);
+      state.verbIdx += 1;
+      state.verbStep = null;
+      state.verbStepData = null;
+      renderVerbDeck();
+    }
+
+    function finalizeVerbDrillFromResults(card, entry) {
+      const allCorrect = entry.weaknessProfile.length === 0;
+      // Show a tiny summary then advance
+      const view = document.getElementById('view-verbdeck');
+      view.innerHTML = `
+        <div class="subhead">
+          <button class="back-btn" id="vd-back">←</button>
+          <div class="subhead-title">${t('practice_verb')}</div>
+        </div>
+        <div class="drill-card" style="text-align:center;justify-content:center;">
+          <div class="drill-verb">${escHtml(card.infinitive)}</div>
+          <div class="drill-question">${allCorrect ? t('verb_drill_done') : t('verb_drill_partial')}</div>
+          <button class="next-btn" id="vd-finalize">${t('verb_drill_continue')}</button>
+        </div>`;
+      document.getElementById('vd-back').onclick = goHome;
+      document.getElementById('vd-finalize').onclick = () => finalizeVerbDrill(card, entry, allCorrect);
+    }
+
+    /* ===========================================================================
+     * RENDER — BROWSE
+     * ===========================================================================*/
+    function renderBrowse() {
+      const all = getAllCards();
+      const seedIds = new Set((window.SEED_CARDS || []).map(c => c.id));
+      const filter = state.browseFilter;
+
+      let filtered = all;
+      if (filter === 'noun') filtered = filtered.filter(c => c.type === 'noun');
+      else if (filter === 'verb') filtered = filtered.filter(c => c.type === 'verb');
+      else if (filter === 'A1' || filter === 'A2' || filter === 'B1') filtered = filtered.filter(c => c.level === filter);
+      else if (filter === 'mine') filtered = filtered.filter(c => !seedIds.has(c.id));
+
+      const total = filtered.length;
+      const shown = filtered.slice(0, 200);
+
+      const chips = [
+        { id: 'all', label: t('all') },
+        { id: 'noun', label: t('nomen') },
+        { id: 'verb', label: t('verben') },
+        { id: 'A1', label: 'A1' }, { id: 'A2', label: 'A2' }, { id: 'B1', label: 'B1' },
+        { id: 'mine', label: t('eigene') },
+      ];
+
+      const rowsHtml = shown.map(c => {
+        const ent = state.leitner[c.id];
+        const inArt = state.artikel[c.id];
+        const inVerb = state.verbdeck[c.id];
+        const isMine = !seedIds.has(c.id);
+        const main = c.type === 'noun'
+          ? `<span class="article-muted">${escHtml(c.article)}</span>${escHtml(c.word)}`
+          : escHtml(c.infinitive);
+        const en = c.en.join(', ');
+        return `
+          <div class="browse-row">
+            <div class="browse-row-main">
+              <div class="browse-row-de">${main}</div>
+              <div class="browse-row-en">${escHtml(en)}</div>
+            </div>
+            <div class="browse-row-meta">
+              ${ent ? `<span class="meta-tag box${ent.box}">L${ent.box}</span>` : ''}
+              ${inArt ? `<span class="meta-tag deck-a">A</span>` : ''}
+              ${inVerb ? `<span class="meta-tag deck-v">V</span>` : ''}
+              ${isMine ? `<button class="delete-btn" data-id="${escHtml(c.id)}" title="delete">×</button>` : ''}
+            </div>
+          </div>`;
+      }).join('');
+
+      const view = document.getElementById('view-browse');
+      view.innerHTML = `
+        <div class="subhead">
+          <button class="back-btn" id="br-back">←</button>
+          <div class="subhead-title">${t('all_cards')}</div>
+          <div class="subhead-spacer"></div>
+          <div class="subhead-meta">${total}</div>
+        </div>
+        <div class="filter-chips">
+          ${chips.map(ch => `<button class="filter-chip ${state.browseFilter === ch.id ? 'active' : ''}" data-f="${ch.id}">${escHtml(ch.label)}</button>`).join('')}
+        </div>
+        ${shown.length === 0
+          ? `<div class="empty"><div class="empty-title">${t('no_cards_match')}</div></div>`
+          : `<div class="browse-list">${rowsHtml}</div>`}
+        ${total > 200 ? `<div class="more-indicator">…${total - 200} ${t('more_suffix')} ${t('and_more')}</div>` : ''}
+      `;
+
+      document.getElementById('br-back').onclick = goHome;
+      view.querySelectorAll('.filter-chip').forEach(b => {
+        b.onclick = () => { state.browseFilter = b.dataset.f; renderBrowse(); };
+      });
+      view.querySelectorAll('.delete-btn').forEach(b => {
+        b.onclick = () => {
+          if (!confirm(t('confirm_delete'))) return;
+          const id = b.dataset.id;
+          state.userCards = state.userCards.filter(c => c.id !== id);
+          delete state.leitner[id]; delete state.artikel[id]; delete state.verbdeck[id];
+          save(KEY_CARDS, state.userCards);
+          save(KEY_LEITNER, state.leitner);
+          save(KEY_ARTIKEL, state.artikel);
+          save(KEY_VERB, state.verbdeck);
+          renderBrowse();
+        };
+      });
+    }
+
+    /* ===========================================================================
+     * RENDER — ADD WORD FORM
+     * ===========================================================================*/
+    function renderAdd() {
+      const view = document.getElementById('view-add');
+      const tab = state.addTab;
+
+      const tabBar = `
+        <div class="add-tabs">
+          <button class="add-tab ${tab === 'noun' ? 'active' : ''}" data-tab="noun">${t('nomen_tab')}</button>
+          <button class="add-tab ${tab === 'verb' ? 'active' : ''}" data-tab="verb">${t('verb_tab')}</button>
+        </div>`;
+
+      let formHtml = '';
+      if (tab === 'noun') {
+        formHtml = `
+          <div class="form-stack">
+            <div class="field-row">
+              <div class="field"><label class="field-label">${t('article_label')}</label>
+                <select class="select" id="f-article"><option>der</option><option>die</option><option>das</option></select>
+              </div>
+              <div class="field"><label class="field-label">${t('niveau')}</label>
+                <select class="select" id="f-niveau"><option>A1</option><option>A2</option><option>B1</option><option>custom</option></select>
+              </div>
+            </div>
+            <div class="field"><label class="field-label">${t('noun_de')}</label><input class="input" id="f-noun"></div>
+            <div class="field"><label class="field-label">${t('plural_label')}</label><input class="input" id="f-plural" placeholder="—"></div>
+            <div class="field"><label class="field-label">${t('english_label')}</label><input class="input" id="f-en"></div>
+            <div class="field"><label class="field-label">${t('example_de')}</label><input class="input" id="f-ex-de"></div>
+            <div class="field"><label class="field-label">${t('example_en')}</label><input class="input" id="f-ex-en"></div>
+            <button class="save-btn" id="f-save">${t('save')}</button>
+          </div>`;
+      } else {
+        formHtml = `
+          <div class="form-stack">
+            <div class="field-row">
+              <div class="field"><label class="field-label">${t('verb_inf')}</label><input class="input" id="f-inf" placeholder="spielen / sich freuen"></div>
+              <div class="field"><label class="field-label">${t('niveau')}</label>
+                <select class="select" id="f-niveau"><option>A1</option><option>A2</option><option>B1</option><option>custom</option></select>
+              </div>
+            </div>
+            <div class="field"><label class="field-label">${t('english_label')}</label><input class="input" id="f-en"></div>
+            <button type="button" class="auto-fill-btn" id="f-autofill">${t('autofill')}</button>
+            <div class="form-section-divider"></div>
+            <label class="field-label">${t('conjugation')}</label>
+            <div class="conj-grid">
+              <input class="input" id="f-c-ich" placeholder="ich">
+              <input class="input" id="f-c-du" placeholder="du">
+              <input class="input" id="f-c-er" placeholder="er/sie/es">
+              <input class="input" id="f-c-wir" placeholder="wir">
+              <input class="input" id="f-c-ihr" placeholder="ihr">
+              <input class="input" id="f-c-sie" placeholder="sie/Sie">
+            </div>
+            <div class="field-row">
+              <div class="field"><label class="field-label">${t('perfekt')}</label><input class="input" id="f-perfekt" placeholder="hat gespielt"></div>
+              <div class="field"><label class="field-label">${t('praeteritum')}</label><input class="input" id="f-praet" placeholder="spielte"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label class="field-label">${t('hilfsverb')}</label>
+                <select class="select" id="f-hilf"><option>haben</option><option>sein</option></select>
+              </div>
+              <div class="field"><label class="field-label">${t('objcase_label')}</label>
+                <select class="select" id="f-obj"><option value="">${t('none_label')}</option><option value="Akk">Akk</option><option value="Dat">Dat</option></select>
+              </div>
+            </div>
+            <div class="checkbox-row">
+              <label><input type="checkbox" id="f-refl">${t('reflexive_lbl')}</label>
+              <label><input type="checkbox" id="f-sep">${t('separable_lbl')}</label>
+              <label><input type="checkbox" id="f-strong">${t('strong_lbl')}</label>
+            </div>
+            <div class="field"><label class="field-label">${t('prep_textarea')}</label>
+              <textarea class="textarea" id="f-prep" placeholder="auf|Akk|for&#10;über|Akk|about"></textarea>
+            </div>
+            <div class="field"><label class="field-label">${t('example_de')}</label><input class="input" id="f-ex-de"></div>
+            <div class="field"><label class="field-label">${t('example_en')}</label><input class="input" id="f-ex-en"></div>
+            <button class="save-btn" id="f-save">${t('save')}</button>
+          </div>`;
+      }
+
+      view.innerHTML = `
+        <div class="subhead">
+          <button class="back-btn" id="add-back">←</button>
+          <div class="subhead-title">${t('add_word')}</div>
+        </div>
+        ${tabBar}
+        ${formHtml}
+      `;
+
+      document.getElementById('add-back').onclick = goHome;
+      view.querySelectorAll('.add-tab').forEach(b => {
+        b.onclick = () => { state.addTab = b.dataset.tab; renderAdd(); };
+      });
+
+      const autofill = document.getElementById('f-autofill');
+      if (autofill) autofill.onclick = () => {
+        const raw = document.getElementById('f-inf').value.trim();
+        if (!raw) return;
+        const isReflexive = raw.startsWith('sich ');
+        const verb = isReflexive ? raw.slice(5) : raw;
+        const stem = verb.endsWith('en') ? verb.slice(0, -2) : (verb.endsWith('n') ? verb.slice(0, -1) : verb);
+        const endsTD = /[td]$/.test(stem);
+        const conj = {
+          ich: stem + 'e',
+          du: stem + (endsTD ? 'est' : 'st'),
+          er: stem + (endsTD ? 'et' : 't'),
+          wir: stem + 'en',
+          ihr: stem + (endsTD ? 'et' : 't'),
+          sie: stem + 'en',
+        };
+        const reflPron = { ich: 'mich', du: 'dich', er: 'sich', wir: 'uns', ihr: 'euch', sie: 'sich' };
+        Object.keys(conj).forEach(p => {
+          document.getElementById('f-c-' + p).value = isReflexive ? `${conj[p]} ${reflPron[p]}` : conj[p];
+        });
+        document.getElementById('f-perfekt').value = (isReflexive ? 'hat sich ge' : 'hat ge') + stem + (endsTD ? 'et' : 't');
+        document.getElementById('f-praet').value = stem + (endsTD ? 'ete' : 'te') + (isReflexive ? ' sich' : '');
+        if (isReflexive) document.getElementById('f-refl').checked = true;
+      };
+
+      document.getElementById('f-save').onclick = () => {
+        const id = 'u' + Date.now();
+        const niveau = document.getElementById('f-niveau').value;
+        const enRaw = document.getElementById('f-en').value.trim();
+        const enList = enRaw ? enRaw.split(',').map(s => s.trim()).slice(0, 3).filter(Boolean) : [];
+
+        let card;
+        if (tab === 'noun') {
+          const word = document.getElementById('f-noun').value.trim();
+          if (!word) { showToast('Nomen?'); return; }
+          card = {
+            id, type: 'noun',
+            article: document.getElementById('f-article').value,
+            word,
+            plural: document.getElementById('f-plural').value.trim() || '—',
+            en: enList,
+            example: {
+              de: document.getElementById('f-ex-de').value.trim(),
+              en: document.getElementById('f-ex-en').value.trim(),
+            },
+            level: niveau,
+          };
+        } else {
+          const inf = document.getElementById('f-inf').value.trim();
+          if (!inf) { showToast('Verb?'); return; }
+          const prepLines = document.getElementById('f-prep').value.split('\n').map(l => l.trim()).filter(Boolean);
+          const prepositions = prepLines.map(line => {
+            const [prep, c, meaning] = line.split('|').map(s => (s || '').trim());
+            return { prep, case: c, meaning: meaning || '' };
+          }).filter(p => p.prep && (p.case === 'Akk' || p.case === 'Dat'));
+          card = {
+            id, type: 'verb', infinitive: inf, en: enList,
+            conj: {
+              ich: document.getElementById('f-c-ich').value.trim(),
+              du: document.getElementById('f-c-du').value.trim(),
+              er: document.getElementById('f-c-er').value.trim(),
+              wir: document.getElementById('f-c-wir').value.trim(),
+              ihr: document.getElementById('f-c-ihr').value.trim(),
+              sie: document.getElementById('f-c-sie').value.trim(),
+            },
+            perfekt: document.getElementById('f-perfekt').value.trim(),
+            praeteritum: document.getElementById('f-praet').value.trim(),
+            hilfsverb: document.getElementById('f-hilf').value,
+            reflexive: document.getElementById('f-refl').checked,
+            separable: document.getElementById('f-sep').checked,
+            strong: document.getElementById('f-strong').checked,
+            objectCase: document.getElementById('f-obj').value || null,
+            prepositions,
+            example: {
+              de: document.getElementById('f-ex-de').value.trim(),
+              en: document.getElementById('f-ex-en').value.trim(),
+            },
+            level: niveau,
+          };
+        }
+        state.userCards.push(card);
+        save(KEY_CARDS, state.userCards);
+        showToast(t('saved'));
+        goHome();
+      };
+    }
+
+    /* ===========================================================================
+     * NAVIGATION
+     * ===========================================================================*/
+    function goHome() {
+      renderHome();
+      showView('home');
+    }
+
+    /* ===========================================================================
+     * HEADER + LANG TOGGLE
+     * ===========================================================================*/
+    function renderLangToggle() {
+      const wrap = document.getElementById('lang-toggle');
+      wrap.querySelectorAll('.lang-pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.lang === state.lang);
+        p.onclick = () => {
+          state.lang = p.dataset.lang;
+          save(KEY_LANG, state.lang);
+          document.documentElement.lang = state.lang;
+          renderLangToggle();
+          // Re-render whatever view is active
+          rerenderCurrent();
+        };
+      });
+    }
+
+    function rerenderCurrent() {
+      const v = state.currentView;
+      // Footer label
+      document.getElementById('footer-add-label').textContent = t('add_word');
+      if (v === 'home') renderHome();
+      else if (v === 'practice') renderPractice();
+      else if (v === 'artikel') renderArtikel();
+      else if (v === 'verbdeck') renderVerbDeck();
+      else if (v === 'browse') renderBrowse();
+      else if (v === 'add') renderAdd();
+    }
+
+    /* ===========================================================================
+     * INIT
+     * ===========================================================================*/
+    function init() {
+      document.documentElement.lang = state.lang;
+      renderLangToggle();
+      document.getElementById('footer-add-label').textContent = t('add_word');
+      document.getElementById('footer-add-btn').onclick = () => { renderAdd(); showView('add'); };
+      document.getElementById('brand-link').onclick = goHome;
+      // Sticky header shadow when scrolled
+      const header = document.getElementById('header');
+      document.addEventListener('scroll', () => {
+        header.classList.toggle('scrolled', window.scrollY > 4);
+      }, { passive: true });
+      ensureTodayFresh();
+      renderHome();
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js').catch(() => {});
+        });
+      }
+    }
+
+    init();
+  })();
+  </script>
+</body>
+</html>
