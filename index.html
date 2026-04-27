@@ -618,14 +618,19 @@
     .browse-row.selected .select-checkbox { background: var(--orange-primary); border-color: var(--orange-primary); }
 
     .selection-bar {
-      position: sticky; bottom: 0;
-      margin-top: 14px;
+      position: fixed;
+      bottom: calc(76px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 36px);
+      max-width: 444px;
+      z-index: 20;
       background: var(--card-white);
       border: 0.5px solid var(--border-cream);
       border-radius: 14px;
       padding: 12px;
       display: flex; gap: 10px; align-items: center;
-      box-shadow: 0 -4px 16px rgba(61,46,34,0.06);
+      box-shadow: 0 4px 16px rgba(61,46,34,0.10);
     }
     .selection-bar .sel-count { font-size: 13px; color: var(--text-muted); flex: 1; }
     .selection-bar .sel-action {
